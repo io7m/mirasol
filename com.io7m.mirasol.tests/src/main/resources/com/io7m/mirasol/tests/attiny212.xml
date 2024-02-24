@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Package xmlns="urn:com.io7m.mirasol:1"
+         Name="com.microchip.attiny212">
+
+  <Documentation>
+    An example ATTiny212 definition set.
+  </Documentation>
+
+  <Import Package="com.io7m.mirasol.core"
+          As="C"/>
+
+  <Structure Name="GPIO">
+    <Field Name="GPIOR0">
+      <OffsetHex Value="0x0"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="GPIOR1">
+      <OffsetHex Value="0x1"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="GPIOR2">
+      <OffsetHex Value="0x2"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="GPIOR3">
+      <OffsetHex Value="0x3"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+  </Structure>
+
+  <Structure Name="FUSE">
+    <BitField Name="WDTCFG"
+              SizeOctets="1">
+      <Offset Value="0"/>
+      <BitRange Name="PERIOD"
+                LowerInclusive="0"
+                UpperInclusive="3"/>
+      <BitRange Name="WINDOW"
+                LowerInclusive="4"
+                UpperInclusive="7"/>
+    </BitField>
+
+    <BitField Name="BODCFG"
+              SizeOctets="1">
+      <Offset Value="1"/>
+      <BitRange Name="SLEEP"
+                LowerInclusive="0"
+                UpperInclusive="1"/>
+      <BitRange Name="ACTIVE"
+                LowerInclusive="2"
+                UpperInclusive="3"/>
+      <BitRange Name="SAMPFREQ"
+                LowerInclusive="4"
+                UpperInclusive="4"/>
+      <BitRange Name="LVL"
+                LowerInclusive="5"
+                UpperInclusive="7"/>
+    </BitField>
+
+    <BitField Name="OSCCFG"
+              SizeOctets="1">
+      <Offset Value="2"/>
+      <BitRange Name="FREQSEL"
+                LowerInclusive="0"
+                UpperInclusive="1"/>
+      <BitRange Name="OSCLOCK"
+                LowerInclusive="7"
+                UpperInclusive="7"/>
+    </BitField>
+
+    <Field Name="RESERVED0">
+      <Offset Value="3"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+
+    <BitField Name="TCD0CFG"
+              SizeOctets="1">
+      <Offset Value="4"/>
+      <BitRange Name="CMPA"
+                LowerInclusive="0"
+                UpperInclusive="0"/>
+      <BitRange Name="CMPB"
+                LowerInclusive="1"
+                UpperInclusive="1"/>
+      <BitRange Name="CMPC"
+                LowerInclusive="2"
+                UpperInclusive="2"/>
+      <BitRange Name="CMPD"
+                LowerInclusive="3"
+                UpperInclusive="3"/>
+      <BitRange Name="CMPAEN"
+                LowerInclusive="4"
+                UpperInclusive="4"/>
+      <BitRange Name="CMPBEN"
+                LowerInclusive="5"
+                UpperInclusive="5"/>
+      <BitRange Name="CMPCEN"
+                LowerInclusive="6"
+                UpperInclusive="6"/>
+      <BitRange Name="CMPDEN"
+                LowerInclusive="7"
+                UpperInclusive="7"/>
+    </BitField>
+
+    <BitField Name="SYSCFG0"
+              SizeOctets="1">
+      <Offset Value="5"/>
+      <BitRange Name="EESAVE"
+                LowerInclusive="0"
+                UpperInclusive="0"/>
+      <BitRange Name="RSTPINCFG"
+                LowerInclusive="2"
+                UpperInclusive="3"/>
+      <BitRange Name="CRCSRC"
+                LowerInclusive="6"
+                UpperInclusive="7"/>
+    </BitField>
+
+    <BitField Name="SYSCFG1"
+              SizeOctets="1">
+      <Offset Value="6"/>
+      <BitRange Name="SUT"
+                LowerInclusive="0"
+                UpperInclusive="2"/>
+    </BitField>
+
+    <Field Name="APPEND">
+      <Offset Value="7"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+
+    <Field Name="BOOTEND">
+      <Offset Value="8"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+
+    <Field Name="RESERVED1">
+      <Offset Value="9"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+
+    <Field Name="LOCKBIT">
+      <OffsetHex Value="0xA"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+  </Structure>
+
+  <Structure Name="PINCTRL">
+    <BitField Name="PINCTRL"
+              SizeOctets="1">
+      <OffsetHex Value="0x0"/>
+      <BitRange Name="ISC"
+                LowerInclusive="0"
+                UpperInclusive="2"/>
+      <BitRange Name="PULLUPEN"
+                LowerInclusive="3"
+                UpperInclusive="3"/>
+      <BitRange Name="INVEN"
+                LowerInclusive="7"
+                UpperInclusive="7"/>
+    </BitField>
+  </Structure>
+
+  <Structure Name="PORT">
+    <Field Name="DIR">
+      <OffsetHex Value="0x0"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="DIRSET">
+      <OffsetHex Value="0x1"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="DIRCLR">
+      <OffsetHex Value="0x2"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="DIRTGL">
+      <OffsetHex Value="0x3"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="OUT">
+      <OffsetHex Value="0x4"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="OUTSET">
+      <OffsetHex Value="0x5"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="OUTCLR">
+      <OffsetHex Value="0x6"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="OUTTGL">
+      <OffsetHex Value="0x7"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="IN">
+      <OffsetHex Value="0x8"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="INTFLAGS">
+      <OffsetHex Value="0x9"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+
+    <Field Name="RESERVED0">
+      <OffsetHex Value="0xA"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="RESERVED1">
+      <OffsetHex Value="0xB"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="RESERVED2">
+      <OffsetHex Value="0xC"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="RESERVED3">
+      <OffsetHex Value="0xD"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="RESERVED4">
+      <OffsetHex Value="0xE"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+    <Field Name="RESERVED5">
+      <OffsetHex Value="0xF"/>
+      <Type Prefix="C"
+            Name="IntegerUnsigned8"/>
+    </Field>
+
+    <Field Name="PIN0CTRL">
+      <OffsetHex Value="0x10"/>
+      <Type Name="PINCTRL"/>
+    </Field>
+    <Field Name="PIN1CTRL">
+      <OffsetHex Value="0x11"/>
+      <Type Name="PINCTRL"/>
+    </Field>
+    <Field Name="PIN2CTRL">
+      <OffsetHex Value="0x12"/>
+      <Type Name="PINCTRL"/>
+    </Field>
+    <Field Name="PIN3CTRL">
+      <OffsetHex Value="0x13"/>
+      <Type Name="PINCTRL"/>
+    </Field>
+    <Field Name="PIN4CTRL">
+      <OffsetHex Value="0x14"/>
+      <Type Name="PINCTRL"/>
+    </Field>
+    <Field Name="PIN5CTRL">
+      <OffsetHex Value="0x15"/>
+      <Type Name="PINCTRL"/>
+    </Field>
+    <Field Name="PIN6CTRL">
+      <OffsetHex Value="0x16"/>
+      <Type Name="PINCTRL"/>
+    </Field>
+    <Field Name="PIN7CTRL">
+      <OffsetHex Value="0x17"/>
+      <Type Name="PINCTRL"/>
+    </Field>
+  </Structure>
+
+  <Structure Name="VREF">
+    <BitField Name="CTRLA"
+              SizeOctets="1">
+      <OffsetHex Value="0x0"/>
+      <BitRange Name="DAC0REFSEL"
+                LowerInclusive="0"
+                UpperInclusive="2"/>
+      <BitRange Name="ADC0REFSEL"
+                LowerInclusive="4"
+                UpperInclusive="7"/>
+    </BitField>
+    <BitField Name="CTRLB"
+              SizeOctets="1">
+      <OffsetHex Value="0x1"/>
+      <BitRange Name="DAC0REFEN"
+                LowerInclusive="0"
+                UpperInclusive="0"/>
+      <BitRange Name="ADC0REFEN"
+                LowerInclusive="1"
+                UpperInclusive="1"/>
+    </BitField>
+  </Structure>
+
+  <Structure Name="ATTiny212">
+    <Field Name="VPORTA">
+      <OffsetHex Value="0x0000"/>
+      <Type Name="PORT"/>
+    </Field>
+    <Field Name="VREF">
+      <OffsetHex Value="0x00A0"/>
+      <Type Name="VREF"/>
+    </Field>
+  </Structure>
+
+  <Map Name="ATTiny212Map">
+    <Offset Value="0"/>
+    <Type Name="ATTiny212"/>
+  </Map>
+
+</Package>

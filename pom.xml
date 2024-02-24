@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.io7m.primogenitor</groupId>
+    <artifactId>com.io7m.primogenitor.full</artifactId>
+    <version>8.1.0</version>
+  </parent>
+
+  <groupId>com.io7m.mirasol</groupId>
+  <artifactId>com.io7m.mirasol</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <packaging>pom</packaging>
+  <name>com.io7m.mirasol</name>
+  <description>Machine-readable memory map documentation</description>
+  <url>https://www.io7m.com/software/mirasol</url>
+
+  <modules>
+    <module>com.io7m.mirasol.compiler.api</module>
+    <module>com.io7m.mirasol.compiler</module>
+    <module>com.io7m.mirasol.core</module>
+    <module>com.io7m.mirasol.loader.api</module>
+    <module>com.io7m.mirasol.parser.api</module>
+    <module>com.io7m.mirasol.parser</module>
+    <module>com.io7m.mirasol.schema</module>
+    <module>com.io7m.mirasol.strings</module>
+    <module>com.io7m.mirasol.tests</module>
+  </modules>
+
+  <properties>
+    <com.io7m.blackthorne.version>2.0.0</com.io7m.blackthorne.version>
+    <com.io7m.jxtrand.version>2.0.0</com.io7m.jxtrand.version>
+    <io7m.api.previousVersion>1.0.1</io7m.api.previousVersion>
+    <io7m.java.targetJavaVersion>21</io7m.java.targetJavaVersion>
+  </properties>
+
+  <licenses>
+    <license>
+      <name>ISC</name>
+      <url>https://www.io7m.com/license/isc.txt</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://www.github.com/io7m/mirasol</url>
+    <connection>scm:git:https://github.com/io7m/mirasol</connection>
+    <developerConnection>scm:git:https://github.com/io7m/mirasol</developerConnection>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>io7m</id>
+      <name>io7m</name>
+      <email>code@io7m.com</email>
+      <url>https://www.io7m.com</url>
+    </developer>
+  </developers>
+
+  <issueManagement>
+    <url>https://www.github.com/io7m/mirasol/issues</url>
+    <system>GitHub Issues</system>
+  </issueManagement>
+
+  <distributionManagement>
+    <site>
+      <id>io7m.com</id>
+      <name>io7m.com</name>
+      <url>https://www.io7m.com/software/mirasol</url>
+    </site>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <ciManagement>
+    <system>GitHub Actions</system>
+    <url>https://www.github.com/io7m/mirasol/actions</url>
+  </ciManagement>
+
+  <prerequisites>
+    <maven>3.0.4</maven>
+  </prerequisites>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.io7m.jranges</groupId>
+        <artifactId>com.io7m.jranges.core</artifactId>
+        <version>5.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.jdeferthrow</groupId>
+        <artifactId>com.io7m.jdeferthrow.core</artifactId>
+        <version>1.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jgrapht</groupId>
+        <artifactId>jgrapht-core</artifactId>
+        <version>1.5.2</version>
+      </dependency>
+
+      <!-- Parsing -->
+      <dependency>
+        <groupId>com.io7m.anethum</groupId>
+        <artifactId>com.io7m.anethum.api</artifactId>
+        <version>1.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.blackthorne</groupId>
+        <artifactId>com.io7m.blackthorne.core</artifactId>
+        <version>${com.io7m.blackthorne.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.blackthorne</groupId>
+        <artifactId>com.io7m.blackthorne.jxe</artifactId>
+        <version>${com.io7m.blackthorne.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.jxe</groupId>
+        <artifactId>com.io7m.jxe.core</artifactId>
+        <version>1.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.jlexing</groupId>
+        <artifactId>com.io7m.jlexing.core</artifactId>
+        <version>3.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.lanark</groupId>
+        <artifactId>com.io7m.lanark.core</artifactId>
+        <version>1.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.seltzer</groupId>
+        <artifactId>com.io7m.seltzer.api</artifactId>
+        <version>1.0.0</version>
+      </dependency>
+
+      <!-- jxstrand string resources -->
+      <dependency>
+        <groupId>com.io7m.jxtrand</groupId>
+        <artifactId>com.io7m.jxtrand.vanilla</artifactId>
+        <version>${com.io7m.jxtrand.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.jxtrand</groupId>
+        <artifactId>com.io7m.jxtrand.api</artifactId>
+        <version>${com.io7m.jxtrand.version}</version>
+      </dependency>
+
+      <!-- Logging -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>2.0.11</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.4.14</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.10.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.10.1</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.io7m.jxtrand</groupId>
+          <artifactId>com.io7m.jxtrand.maven_plugin</artifactId>
+          <version>${com.io7m.jxtrand.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <configuration>
+            <suppressionsLocation>checkstyle-filter.xml</suppressionsLocation>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <!-- Generate a site -->
+      <plugin>
+        <groupId>com.io7m.minisite</groupId>
+        <artifactId>com.io7m.minisite.maven_plugin</artifactId>
+        <inherited>false</inherited>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

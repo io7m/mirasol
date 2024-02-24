@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Package xmlns="urn:com.io7m.mirasol:1"
+         Name="com.io7m.type_circ">
+
+  <Structure Name="T">
+    <Field Name="F">
+      <Offset Value="0"/>
+      <Type Name="T"/>
+    </Field>
+  </Structure>
+
+</Package>

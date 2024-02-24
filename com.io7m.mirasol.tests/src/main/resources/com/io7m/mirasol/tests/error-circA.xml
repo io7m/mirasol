@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Package xmlns="urn:com.io7m.mirasol:1"
+         Name="com.io7m.circ_a">
+  <Import Package="com.io7m.circ_b"
+          As="B"/>
+</Package>

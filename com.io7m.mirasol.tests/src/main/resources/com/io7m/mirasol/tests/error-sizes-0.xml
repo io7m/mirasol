@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Package xmlns="urn:com.io7m.mirasol:1"
+         Name="com.io7m.sizes">
+  <ScalarType Name="U1" Kind="IntegerUnsigned" SizeInBits="0"/>
+</Package>

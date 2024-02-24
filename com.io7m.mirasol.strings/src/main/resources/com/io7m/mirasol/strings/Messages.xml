@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties>
+  <entry key="error_checker_size_positive">Sizes of types must be positive.</entry>
+  <entry key="error_checker_import_missing">No package has been imported using the given prefix.</entry>
+  <entry key="error_checker_type_reference_map">Types cannot refer to memory maps.</entry>
+  <entry key="error_checker_type_reference_nonexistent">Reference to nonexistent type.</entry>
+  <entry key="error_checker_type_reference_cyclic">Type reference would introduce a cycle.</entry>
+  <entry key="error_circular_dependency">Circular package import detected.</entry>
+  <entry key="error_circular_path">Package Path [{0}]</entry>
+  <entry key="error_compilation">Compilation failed.</entry>
+  <entry key="error_io">I/O error.</entry>
+
+  <entry key="column">Column</entry>
+  <entry key="file">File</entry>
+  <entry key="line">Line</entry>
+  <entry key="map">Map</entry>
+  <entry key="package">Package</entry>
+  <entry key="prefix">Prefix</entry>
+  <entry key="type">Type</entry>
+  <entry key="size_bits">Size (Bits)</entry>
+</properties>

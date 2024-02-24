@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+  Copyright © 2024 Mark Raynsford <code@io7m.com> https://www.io7m.com
+
+  Permission to use, copy, modify, and/or distribute this software for any
+  purpose with or without fee is hereby granted, provided that the above
+  copyright notice and this permission notice appear in all copies.
+
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+  SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+  IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:m="urn:com.io7m.mirasol:1"
+            targetNamespace="urn:com.io7m.mirasol:1">
+
+  <xsd:simpleType name="PackageNameType">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="([a-z][a-z0-9_-]{0,63})(\.[a-z][a-z0-9_-]{0,62}){0,15}"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="SimpleNameType">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="[a-zA-Z][a-zA-Z0-9_-]{0,63}"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="HexNumberType">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="0x[0-9A-Fa-f]+"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:element name="Type">
+    <xsd:complexType>
+      <xsd:attribute name="Prefix"
+                     type="m:SimpleNameType"
+                     use="optional"/>
+      <xsd:attribute name="Name"
+                     type="m:SimpleNameType"
+                     use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:complexType name="OffsetType"
+                   abstract="true"/>
+
+  <xsd:element name="Offset">
+    <xsd:complexType>
+      <xsd:complexContent>
+        <xsd:extension base="m:OffsetType">
+          <xsd:attribute name="Value"
+                         use="required"
+                         type="xsd:unsignedLong"/>
+        </xsd:extension>
+      </xsd:complexContent>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="OffsetHex">
+    <xsd:complexType>
+      <xsd:complexContent>
+        <xsd:extension base="m:OffsetType">
+          <xsd:attribute name="Value"
+                         use="required"
+                         type="m:HexNumberType"/>
+        </xsd:extension>
+      </xsd:complexContent>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:group name="OffsetGroup">
+    <xsd:choice>
+      <xsd:element ref="m:Offset"/>
+      <xsd:element ref="m:OffsetHex"/>
+    </xsd:choice>
+  </xsd:group>
+
+  <xsd:element name="Documentation">
+    <xsd:complexType>
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:string"/>
+      </xsd:simpleContent>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="ScalarType">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:sequence minOccurs="0"
+                      maxOccurs="1">
+          <xsd:element ref="m:Documentation"/>
+        </xsd:sequence>
+      </xsd:sequence>
+
+      <xsd:attribute name="Name"
+                     type="m:SimpleNameType"
+                     use="required"/>
+      <xsd:attribute name="Kind"
+                     type="m:SimpleNameType"
+                     use="required"/>
+      <xsd:attribute name="SizeInBits"
+                     type="xsd:unsignedLong"
+                     use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="Import">
+    <xsd:complexType>
+      <xsd:attribute name="Package"
+                     type="m:PackageNameType"
+                     use="required"/>
+      <xsd:attribute name="As"
+                     type="m:SimpleNameType"
+                     use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="BitRange">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:sequence minOccurs="0"
+                      maxOccurs="1">
+          <xsd:element ref="m:Documentation"/>
+        </xsd:sequence>
+      </xsd:sequence>
+
+      <xsd:attribute name="Name"
+                     type="m:SimpleNameType"
+                     use="required"/>
+      <xsd:attribute name="LowerInclusive"
+                     type="xsd:unsignedLong"
+                     use="required"/>
+      <xsd:attribute name="UpperInclusive"
+                     type="xsd:unsignedLong"
+                     use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="BitField">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:sequence minOccurs="0"
+                      maxOccurs="1">
+          <xsd:element ref="m:Documentation"/>
+        </xsd:sequence>
+        <xsd:group ref="m:OffsetGroup"
+                   minOccurs="1"
+                   maxOccurs="1"/>
+        <xsd:sequence minOccurs="0"
+                      maxOccurs="unbounded">
+          <xsd:element ref="m:BitRange"/>
+        </xsd:sequence>
+      </xsd:sequence>
+
+      <xsd:attribute name="Name"
+                     type="m:SimpleNameType"
+                     use="required"/>
+
+      <xsd:attribute name="SizeOctets"
+                     type="xsd:unsignedLong"
+                     use="required"/>
+    </xsd:complexType>
+
+    <xsd:key name="BitFieldNameKey">
+      <xsd:selector xpath="m:BitRegion"/>
+      <xsd:field xpath="@Name"/>
+    </xsd:key>
+    <xsd:key name="BitFieldLowerInclusiveKey">
+      <xsd:selector xpath="m:BitRegion"/>
+      <xsd:field xpath="@LowerInclusive"/>
+    </xsd:key>
+    <xsd:key name="BitFieldUpperInclusiveKey">
+      <xsd:selector xpath="m:BitRegion"/>
+      <xsd:field xpath="@UpperInclusive"/>
+    </xsd:key>
+  </xsd:element>
+
+  <xsd:complexType name="PackageElementType"
+                   abstract="true">
+    <xsd:attribute name="Name"
+                   type="m:SimpleNameType"
+                   use="required"/>
+  </xsd:complexType>
+
+  <xsd:element name="Field">
+    <xsd:complexType>
+      <xsd:complexContent>
+        <xsd:extension base="m:PackageElementType">
+          <xsd:sequence>
+            <xsd:sequence minOccurs="0"
+                          maxOccurs="1">
+              <xsd:element ref="m:Documentation"/>
+            </xsd:sequence>
+            <xsd:group ref="m:OffsetGroup"
+                       minOccurs="1"
+                       maxOccurs="1"/>
+            <xsd:element ref="m:Type"
+                         minOccurs="1"
+                         maxOccurs="1"/>
+          </xsd:sequence>
+        </xsd:extension>
+      </xsd:complexContent>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="Structure">
+    <xsd:complexType>
+      <xsd:complexContent>
+        <xsd:extension base="m:PackageElementType">
+          <xsd:sequence>
+            <xsd:sequence minOccurs="0"
+                          maxOccurs="1">
+              <xsd:element ref="m:Documentation"/>
+            </xsd:sequence>
+            <xsd:sequence minOccurs="0"
+                          maxOccurs="unbounded">
+              <xsd:choice>
+                <xsd:element ref="m:Field"/>
+                <xsd:element ref="m:BitField"/>
+              </xsd:choice>
+            </xsd:sequence>
+          </xsd:sequence>
+        </xsd:extension>
+      </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:key name="StructureFieldNameKey">
+      <xsd:selector xpath="m:Field|m:BitField"/>
+      <xsd:field xpath="@Name"/>
+    </xsd:key>
+    <xsd:key name="StructureFieldOffsetKey">
+      <xsd:selector xpath="m:Field/m:Offset|m:BitField/m:Offset|m:Field/m:OffsetHex|m:BitField/m:OffsetHex"/>
+      <xsd:field xpath="@Value"/>
+    </xsd:key>
+  </xsd:element>
+
+  <xsd:element name="Map">
+    <xsd:complexType>
+      <xsd:complexContent>
+        <xsd:extension base="m:PackageElementType">
+          <xsd:sequence>
+            <xsd:sequence minOccurs="0"
+                          maxOccurs="1">
+              <xsd:element ref="m:Documentation"/>
+            </xsd:sequence>
+            <xsd:group ref="m:OffsetGroup"
+                       minOccurs="1"
+                       maxOccurs="1"/>
+            <xsd:element ref="m:Type"
+                         minOccurs="1"
+                         maxOccurs="1"/>
+          </xsd:sequence>
+        </xsd:extension>
+      </xsd:complexContent>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:group name="PackageElementGroup">
+    <xsd:choice>
+      <xsd:element ref="m:Map"/>
+      <xsd:element ref="m:ScalarType"/>
+      <xsd:element ref="m:Structure"/>
+    </xsd:choice>
+  </xsd:group>
+
+  <xsd:element name="Package">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:sequence minOccurs="0"
+                      maxOccurs="1">
+          <xsd:element ref="m:Documentation"/>
+        </xsd:sequence>
+        <xsd:sequence minOccurs="0"
+                      maxOccurs="unbounded">
+          <xsd:element ref="m:Import"/>
+        </xsd:sequence>
+        <xsd:sequence minOccurs="0"
+                      maxOccurs="unbounded">
+          <xsd:group ref="m:PackageElementGroup"/>
+        </xsd:sequence>
+      </xsd:sequence>
+
+      <xsd:attribute name="Name"
+                     type="m:PackageNameType"
+                     use="required"/>
+    </xsd:complexType>
+
+    <xsd:key name="PackageNameKey">
+      <xsd:selector xpath="m:ScalarType|m:Structure|m:Map"/>
+      <xsd:field xpath="@Name"/>
+    </xsd:key>
+    <xsd:key name="ImportPackageKey">
+      <xsd:selector xpath="m:Import"/>
+      <xsd:field xpath="@Package"/>
+    </xsd:key>
+    <xsd:key name="ImportPrefixKey">
+      <xsd:selector xpath="m:Import"/>
+      <xsd:field xpath="@As"/>
+    </xsd:key>
+  </xsd:element>
+
+</xsd:schema>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>com.io7m.mirasol</artifactId>
+    <groupId>com.io7m.mirasol</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>com.io7m.mirasol.strings</artifactId>
+
+  <packaging>jar</packaging>
+  <name>com.io7m.mirasol.strings</name>
+  <description>Machine-readable memory map documentation (Strings)</description>
+  <url>https://www.github.com/io7m/mirasol</url>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.io7m.jxtrand</groupId>
+      <artifactId>com.io7m.jxtrand.api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.io7m.jxtrand</groupId>
+      <artifactId>com.io7m.jxtrand.vanilla</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.io7m.jxtrand</groupId>
+        <artifactId>com.io7m.jxtrand.maven_plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-strings</id>
+            <goals>
+              <goal>generateSources</goal>
+            </goals>
+            <configuration>
+              <inputFile>
+                ${project.basedir}/src/main/resources/com/io7m/mirasol/strings/Messages.xml
+              </inputFile>
+              <packageName>com.io7m.mirasol.strings</packageName>
+              <className>MiStringConstants</className>
+              <extraSuperInterface>com.io7m.mirasol.strings.MiStringConstantType</extraSuperInterface>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

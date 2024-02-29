@@ -17,12 +17,12 @@
 
 package com.io7m.mirasol.parser.internal;
 
+import com.io7m.abstand.core.IntervalB;
 import com.io7m.blackthorne.core.BTElementHandlerConstructorType;
 import com.io7m.blackthorne.core.BTElementHandlerType;
 import com.io7m.blackthorne.core.BTElementParsingContextType;
 import com.io7m.blackthorne.core.BTQualifiedName;
 import com.io7m.jlexing.core.LexicalPosition;
-import com.io7m.jranges.RangeInclusiveB;
 import com.io7m.mirasol.parser.api.ast.MiASTBitRange;
 import com.io7m.mirasol.parser.api.ast.MiASTDocumentation;
 import com.io7m.mirasol.parser.api.ast.MiASTSimpleName;
@@ -114,7 +114,7 @@ public final class Mi1PBitRange
       this.lexical,
       this.documentation,
       this.name,
-      RangeInclusiveB.of(this.lower, this.upper)
+      new IntervalB(this.lower, this.upper)
     );
   }
 }

@@ -18,8 +18,8 @@
 package com.io7m.mirasol.compiler.internal;
 
 import com.io7m.mirasol.core.MiFieldType;
-import com.io7m.mirasol.core.MiScalarType;
 import com.io7m.mirasol.core.MiSimpleName;
+import com.io7m.mirasol.core.MiStructureType;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -29,7 +29,7 @@ record MiStructure(
   MiSimpleName name,
   BigInteger size,
   List<MiFieldType> fields)
-  implements MiScalarType
+  implements MiStructureType
 {
   MiStructure
   {

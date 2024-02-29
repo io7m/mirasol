@@ -17,30 +17,29 @@
 
 package com.io7m.mirasol.core;
 
-import java.math.BigInteger;
+import java.util.Objects;
 
 /**
- * A map declaration.
+ * A reference to a type.
+ *
+ * @param packageName The package the type exists in
+ * @param type        The type
  */
 
-public non-sealed interface MiMapType
-  extends MiPackageElementType
+public record MiTypeReference(
+  MiPackageName packageName,
+  MiTypeType type)
 {
   /**
-   * @return The map name
+   * A reference to a type.
+   *
+   * @param packageName The package the type exists in
+   * @param type        The type
    */
 
-  MiSimpleName name();
-
-  /**
-   * @return The starting offset of the map
-   */
-
-  BigInteger offset();
-
-  /**
-   * @return The map type
-   */
-
-  MiTypeReference type();
+  public MiTypeReference
+  {
+    Objects.requireNonNull(packageName, "packageName");
+    Objects.requireNonNull(type, "type");
+  }
 }

@@ -24,10 +24,12 @@ import com.io7m.mirasol.compiler.api.MiCompilerResultType;
 import com.io7m.mirasol.compiler.api.MiCompilerResultType.Failed;
 import com.io7m.mirasol.compiler.api.MiCompilerResultType.Succeeded;
 import com.io7m.mirasol.compiler.api.MiCompilerType;
+import com.io7m.mirasol.core.MiPackageElementType;
 import com.io7m.mirasol.core.MiPackageType;
 import com.io7m.mirasol.core.MiSimpleName;
 import com.io7m.mirasol.loader.api.MiLoaderType;
 import com.io7m.mirasol.parser.MiParsers;
+import com.io7m.mirasol.parser.MiSerializers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -39,10 +41,14 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class MiCompilerTest
 {
@@ -55,6 +61,7 @@ public final class MiCompilerTest
   private MiLoaderType loader;
   private MiCompilerType compiler;
   private Path directory;
+  private MiSerializers serializers;
 
   @BeforeEach
   public void setup(
@@ -66,6 +73,8 @@ public final class MiCompilerTest
       new MiCompilers();
     this.parsers =
       new MiParsers();
+    this.serializers =
+      new MiSerializers();
     this.loaders =
       new MiDirectoryLoaders(inDirectory);
     this.loader =
@@ -185,6 +194,72 @@ public final class MiCompilerTest
 
     final Succeeded<MiPackageType> success =
       (Succeeded<MiPackageType>) assertInstanceOf(Succeeded.class, result);
+
+    final var pack = success.result();
+    assertEquals(7, pack.size());
+
+    assertTrue(pack.type(new MiSimpleName("ATTiny212")).isPresent());
+    assertTrue(pack.type(new MiSimpleName("PORT")).isPresent());
+    assertTrue(pack.type(new MiSimpleName("VREF")).isPresent());
+    assertTrue(pack.type(new MiSimpleName("GPIO")).isPresent());
+    assertTrue(pack.type(new MiSimpleName("PINCTRL")).isPresent());
+    assertTrue(pack.type(new MiSimpleName("FUSE")).isPresent());
+
+    assertTrue(pack.object(new MiSimpleName("ATTiny212")).isPresent());
+    assertTrue(pack.object(new MiSimpleName("PORT")).isPresent());
+    assertTrue(pack.object(new MiSimpleName("VREF")).isPresent());
+    assertTrue(pack.object(new MiSimpleName("GPIO")).isPresent());
+    assertTrue(pack.object(new MiSimpleName("PINCTRL")).isPresent());
+    assertTrue(pack.object(new MiSimpleName("FUSE")).isPresent());
+    assertTrue(pack.object(new MiSimpleName("ATTiny212Map")).isPresent());
+
+    assertEquals("com.microchip.attiny212", pack.name().toString());
+
+    final var names = List.of(
+      "ATTiny212",
+      "FUSE",
+      "GPIO",
+      "PINCTRL",
+      "PORT",
+      "VREF",
+      "ATTiny212Map"
+    );
+
+    assertEquals(
+      names,
+      pack.stream()
+        .map(MiPackageElementType::name)
+        .map(MiSimpleName::toString)
+        .collect(Collectors.toList())
+    );
+
+    assertFalse(pack.isEmpty());
+    assertTrue(pack.containsAll(pack));
+
+    assertThrows(UnsupportedOperationException.class, () -> {
+      pack.addAll(List.of());
+    });
+    assertThrows(UnsupportedOperationException.class, () -> {
+      pack.add(pack.iterator().next());
+    });
+    assertThrows(UnsupportedOperationException.class, () -> {
+      pack.remove(pack.iterator().next());
+    });
+    assertThrows(UnsupportedOperationException.class, () -> {
+      pack.removeAll(List.of());
+    });
+    assertThrows(UnsupportedOperationException.class, () -> {
+      pack.retainAll(List.of());
+    });
+    assertThrows(UnsupportedOperationException.class, () -> {
+      pack.clear();
+    });
+
+    this.serializers.serialize(
+      URI.create("urn:out"),
+      System.out,
+      pack
+    );
   }
 
   @Test
@@ -238,9 +313,189 @@ public final class MiCompilerTest
       final var expectedSize = (i / 8) + extra;
       assertEquals(
         expectedSize,
-        type.size().intValueExact()
+        type.type().size().intValueExact()
       );
     }
+  }
+
+  @Test
+  public void testSizesBitRangeOverlap0()
+    throws Exception
+  {
+    final var result =
+      this.compiler.compile(
+        URI.create("urn:stdin"),
+        resource("error-bit-range-overlap-0.xml")
+      );
+
+    dumpResult(result);
+
+    final Failed<MiPackageType> failed =
+      (Failed<MiPackageType>) assertInstanceOf(Failed.class, result);
+
+    final var errors = failed.errors();
+    final var e0 = errors.get(0);
+    assertEquals("error-bit-field-overlap", e0.errorCode());
+  }
+
+  @Test
+  public void testSizesBitRangeOverlap1()
+    throws Exception
+  {
+    final var result =
+      this.compiler.compile(
+        URI.create("urn:stdin"),
+        resource("error-bit-range-overlap-1.xml")
+      );
+
+    dumpResult(result);
+
+    final Failed<MiPackageType> failed =
+      (Failed<MiPackageType>) assertInstanceOf(Failed.class, result);
+
+    final var errors = failed.errors();
+    final var e0 = errors.get(0);
+    assertEquals("error-bit-field-overlap", e0.errorCode());
+  }
+
+  @Test
+  public void testSizesBitRangeSizeInsufficient0()
+    throws Exception
+  {
+    final var result =
+      this.compiler.compile(
+        URI.create("urn:stdin"),
+        resource("error-bit-range-size-insufficient-0.xml")
+      );
+
+    dumpResult(result);
+
+    final Failed<MiPackageType> failed =
+      (Failed<MiPackageType>) assertInstanceOf(Failed.class, result);
+
+    final var errors = failed.errors();
+    final var e0 = errors.get(0);
+    assertEquals("error-bit-field-size-insufficient", e0.errorCode());
+  }
+
+  @Test
+  public void testSizesBitRangeSizeInsufficient1()
+    throws Exception
+  {
+    final var result =
+      this.compiler.compile(
+        URI.create("urn:stdin"),
+        resource("error-bit-range-size-insufficient-1.xml")
+      );
+
+    dumpResult(result);
+
+    final Failed<MiPackageType> failed =
+      (Failed<MiPackageType>) assertInstanceOf(Failed.class, result);
+
+    final var errors = failed.errors();
+    final var e0 = errors.get(0);
+    assertEquals("error-bit-field-size-insufficient", e0.errorCode());
+  }
+
+  @Test
+  public void testSizesFieldOverlap0()
+    throws Exception
+  {
+    final var result =
+      this.compiler.compile(
+        URI.create("urn:stdin"),
+        resource("error-field-overlap-0.xml")
+      );
+
+    dumpResult(result);
+
+    final Failed<MiPackageType> failed =
+      (Failed<MiPackageType>) assertInstanceOf(Failed.class, result);
+
+    final var errors = failed.errors();
+    final var e0 = errors.get(0);
+    assertEquals("error-field-overlap", e0.errorCode());
+  }
+
+  @Test
+  public void testSizesFieldOverlap1()
+    throws Exception
+  {
+    final var result =
+      this.compiler.compile(
+        URI.create("urn:stdin"),
+        resource("error-field-overlap-1.xml")
+      );
+
+    dumpResult(result);
+
+    final Failed<MiPackageType> failed =
+      (Failed<MiPackageType>) assertInstanceOf(Failed.class, result);
+
+    final var errors = failed.errors();
+    final var e0 = errors.get(0);
+    assertEquals("error-field-overlap", e0.errorCode());
+  }
+
+  @Test
+  public void testSizesFieldOverlap2()
+    throws Exception
+  {
+    final var result =
+      this.compiler.compile(
+        URI.create("urn:stdin"),
+        resource("error-field-overlap-2.xml")
+      );
+
+    dumpResult(result);
+
+    final Failed<MiPackageType> failed =
+      (Failed<MiPackageType>) assertInstanceOf(Failed.class, result);
+
+    final var errors = failed.errors();
+    final var e0 = errors.get(0);
+    assertEquals("error-field-overlap", e0.errorCode());
+  }
+
+  @Test
+  public void testSizesFieldOverlap3()
+    throws Exception
+  {
+    final var result =
+      this.compiler.compile(
+        URI.create("urn:stdin"),
+        resource("error-field-overlap-3.xml")
+      );
+
+    dumpResult(result);
+
+    final Failed<MiPackageType> failed =
+      (Failed<MiPackageType>) assertInstanceOf(Failed.class, result);
+
+    final var errors = failed.errors();
+    final var e0 = errors.get(0);
+    assertEquals("error-field-overlap", e0.errorCode());
+  }
+
+  @Test
+  public void testMapReferencesMap0()
+    throws Exception
+  {
+    final var result =
+      this.compiler.compile(
+        URI.create("urn:stdin"),
+        resource("error-type-ref-map-0.xml")
+      );
+
+    dumpResult(result);
+
+    final Failed<MiPackageType> failed =
+      (Failed<MiPackageType>) assertInstanceOf(Failed.class, result);
+
+    final var errors = failed.errors();
+    final var e0 = errors.get(0);
+    assertEquals("error-type-reference-map", e0.errorCode());
   }
 
   private static void dumpResult(

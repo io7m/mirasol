@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 
 public record MiSimpleName(
   String value)
+  implements Comparable<MiSimpleName>
 {
   private static final Pattern VALID_NAME =
     Pattern.compile("[a-zA-Z][a-zA-Z0-9_-]{0,63}");
@@ -50,5 +51,12 @@ public record MiSimpleName(
         "Names must match %s".formatted(VALID_NAME)
       );
     }
+  }
+
+  @Override
+  public int compareTo(
+    final MiSimpleName other)
+  {
+    return this.value.compareTo(other.value);
   }
 }

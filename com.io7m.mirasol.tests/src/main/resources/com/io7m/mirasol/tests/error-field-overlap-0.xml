@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Package xmlns="urn:com.io7m.mirasol:1"
+         Name="com.io7m.sizes">
+
+  <ScalarType Name="S0"
+              Kind="IntegerUnsigned"
+              SizeInBits="32"/>
+
+  <Structure Name="T">
+    <Field Name="F0">
+      <Offset Value="0"/>
+      <Type Name="S0"/>
+    </Field>
+    <Field Name="F1">
+      <Offset Value="1"/>
+      <Type Name="S0"/>
+    </Field>
+  </Structure>
+</Package>

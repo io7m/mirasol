@@ -17,6 +17,7 @@
 
 package com.io7m.mirasol.compiler.internal;
 
+import com.io7m.abstand.core.IntervalB;
 import com.io7m.mirasol.core.MiBitRangeType;
 import com.io7m.mirasol.core.MiSimpleName;
 
@@ -24,16 +25,15 @@ import java.math.BigInteger;
 
 record MiBitRange(
   MiSimpleName name,
-  BigInteger lowerInclusive,
-  BigInteger upperInclusive)
+  IntervalB range)
   implements MiBitRangeType
 {
   MiBitRange
   {
-    if (upperInclusive.compareTo(lowerInclusive) < 0) {
+    if (range.lower().compareTo(BigInteger.ZERO) < 0) {
       throw new IllegalArgumentException(
-        "Upper inclusive %s must be >= lower inclusive %s"
-          .formatted(upperInclusive, lowerInclusive)
+        "Lower bound of range %s must be >= 0"
+          .formatted(range)
       );
     }
   }

@@ -17,7 +17,7 @@
 
 package com.io7m.mirasol.core;
 
-import java.math.BigInteger;
+import com.io7m.abstand.core.IntervalB;
 
 /**
  * A bit range.
@@ -32,18 +32,8 @@ public interface MiBitRangeType
   MiSimpleName name();
 
   /**
-   * The index of the lower bit. Must be >= 0.
-   *
-   * @return The lower bit
+   * @return The bit range (must be {@code [0,∞)})
    */
 
-  BigInteger lowerInclusive();
-
-  /**
-   * The index of the upper bit. Must be >= {@link #lowerInclusive()}.
-   *
-   * @return The upper bit
-   */
-
-  BigInteger upperInclusive();
+  IntervalB range();
 }

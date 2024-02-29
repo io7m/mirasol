@@ -46,8 +46,8 @@
     </dependency>
 
     <dependency>
-      <groupId>com.io7m.jranges</groupId>
-      <artifactId>com.io7m.jranges.core</artifactId>
+      <groupId>com.io7m.abstand</groupId>
+      <artifactId>com.io7m.abstand.core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

@@ -26,9 +26,9 @@ module com.io7m.mirasol.compiler
   requires com.io7m.mirasol.parser.api;
   requires com.io7m.mirasol.strings;
 
+  requires com.io7m.abstand.core;
   requires com.io7m.anethum.api;
   requires com.io7m.jdeferthrow.core;
-  requires com.io7m.jranges.core;
   requires org.jgrapht.core;
   requires org.slf4j;
 

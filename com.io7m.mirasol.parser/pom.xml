@@ -21,6 +21,11 @@
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>com.io7m.mirasol.core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>com.io7m.mirasol.schema</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -30,6 +35,10 @@
       <version>${project.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.io7m.abstand</groupId>
+      <artifactId>com.io7m.abstand.core</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.io7m.blackthorne</groupId>
       <artifactId>com.io7m.blackthorne.core</artifactId>
@@ -49,10 +58,6 @@
     <dependency>
       <groupId>com.io7m.jlexing</groupId>
       <artifactId>com.io7m.jlexing.core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.io7m.jranges</groupId>
-      <artifactId>com.io7m.jranges.core</artifactId>
     </dependency>
     <dependency>
       <groupId>com.io7m.lanark</groupId>

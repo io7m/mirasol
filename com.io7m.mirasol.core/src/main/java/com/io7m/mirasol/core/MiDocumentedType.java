@@ -17,30 +17,15 @@
 
 package com.io7m.mirasol.core;
 
-import java.math.BigInteger;
-
 /**
- * A map declaration.
+ * The type of objects that can be documented.
  */
 
-public non-sealed interface MiMapType
-  extends MiPackageElementType
+public interface MiDocumentedType
 {
   /**
-   * @return The map name
+   * @return The documentation text
    */
 
-  MiSimpleName name();
-
-  /**
-   * @return The starting offset of the map
-   */
-
-  BigInteger offset();
-
-  /**
-   * @return The map type
-   */
-
-  MiTypeReference type();
+  String documentation();
 }

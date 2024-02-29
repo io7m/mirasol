@@ -17,8 +17,8 @@
 
 package com.io7m.mirasol.parser.api.ast;
 
+import com.io7m.abstand.core.IntervalB;
 import com.io7m.jlexing.core.LexicalPosition;
-import com.io7m.jranges.RangeInclusiveB;
 
 import java.net.URI;
 import java.util.Objects;
@@ -36,7 +36,7 @@ public record MiASTBitRange(
   LexicalPosition<URI> lexical,
   MiASTDocumentation documentation,
   MiASTSimpleName name,
-  RangeInclusiveB range)
+  IntervalB range)
   implements MiASTDocumentedType
 {
   /**

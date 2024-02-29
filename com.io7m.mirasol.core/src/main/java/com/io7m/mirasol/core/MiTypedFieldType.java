@@ -28,5 +28,5 @@ public non-sealed interface MiTypedFieldType
    * @return The field type
    */
 
-  MiTypeType type();
+  MiTypeReference type();
 }

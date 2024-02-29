@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Package xmlns="urn:com.io7m.mirasol:1"
+         Name="com.io7m.sizes">
+  <Structure Name="T">
+    <BitField Name="T0"
+              SizeOctets="1">
+      <Offset Value="0"/>
+      <BitRange Name="F0"
+                LowerInclusive="0"
+                UpperInclusive="1"/>
+      <BitRange Name="F1"
+                LowerInclusive="1"
+                UpperInclusive="2"/>
+    </BitField>
+  </Structure>
+</Package>

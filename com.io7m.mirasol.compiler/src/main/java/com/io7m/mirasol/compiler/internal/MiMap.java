@@ -19,14 +19,14 @@ package com.io7m.mirasol.compiler.internal;
 
 import com.io7m.mirasol.core.MiMapType;
 import com.io7m.mirasol.core.MiSimpleName;
-import com.io7m.mirasol.core.MiTypeType;
+import com.io7m.mirasol.core.MiTypeReference;
 
 import java.math.BigInteger;
 import java.util.Objects;
 
 record MiMap(
   MiSimpleName name,
-  MiTypeType type,
+  MiTypeReference type,
   BigInteger offset,
   BigInteger size)
   implements MiMapType

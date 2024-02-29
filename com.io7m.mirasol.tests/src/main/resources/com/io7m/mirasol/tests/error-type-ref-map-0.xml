@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Package xmlns="urn:com.io7m.mirasol:1"
+         Name="com.io7m.type_circ">
+
+  <Structure Name="T">
+    <BitField Name="F" SizeOctets="1">
+      <Offset Value="0"/>
+    </BitField>
+  </Structure>
+
+  <Map Name="M0">
+    <Offset Value="0"/>
+    <Type Name="T"/>
+  </Map>
+
+  <Map Name="M1">
+    <Offset Value="0"/>
+    <Type Name="M0"/>
+  </Map>
+
+</Package>

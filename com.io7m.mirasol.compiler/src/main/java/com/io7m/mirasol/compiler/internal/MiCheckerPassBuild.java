@@ -21,9 +21,10 @@ import com.io7m.mirasol.core.MiBitRangeType;
 import com.io7m.mirasol.core.MiFieldType;
 import com.io7m.mirasol.core.MiMapType;
 import com.io7m.mirasol.core.MiPackageElementType;
+import com.io7m.mirasol.core.MiPackageName;
 import com.io7m.mirasol.core.MiScalarType;
-import com.io7m.mirasol.core.MiSimpleName;
 import com.io7m.mirasol.core.MiStructureType;
+import com.io7m.mirasol.core.MiTypeReference;
 import com.io7m.mirasol.core.MiTypeType;
 import com.io7m.mirasol.parser.api.ast.MiASTBitField;
 import com.io7m.mirasol.parser.api.ast.MiASTField;
@@ -35,7 +36,7 @@ import com.io7m.mirasol.parser.api.ast.MiASTStructure;
 import com.io7m.mirasol.parser.api.ast.MiASTTypeReference;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Comparator;
 
 /**
  * A checker pass that builds an output package.
@@ -44,11 +45,9 @@ import java.util.HashMap;
 final class MiCheckerPassBuild
   implements MiCheckerPassType
 {
-  private final HashMap<MiSimpleName, MiPackageElementType> elements;
-
   MiCheckerPassBuild()
   {
-    this.elements = new HashMap<>();
+
   }
 
   @Override
@@ -84,7 +83,7 @@ final class MiCheckerPassBuild
       }
 
       case final MiASTScalarTypeDeclaration scalar -> {
-        yield this.buildScalar(context, scalar);
+        yield buildScalar(context, scalar);
       }
 
       case final MiASTStructure structure -> {
@@ -93,25 +92,28 @@ final class MiCheckerPassBuild
     };
   }
 
-  private MiPackageElementType buildMap(
+  private MiMapType buildMap(
     final MiCheckerContext context,
     final MiASTMap map)
     throws MiCheckerException
   {
     final var name = map.name().toSimpleName();
-    final var existing = this.elements.get(name);
+    final var existing = context.buildGet(name);
     if (existing != null) {
-      return existing;
+      return (MiMapType) existing;
     }
 
     final var target =
       this.resolve(context, map.type());
 
-    return switch (target) {
+    final var result = switch (target.element) {
       case final MiScalarType sc -> {
         yield new MiMap(
           map.name().toSimpleName(),
-          sc,
+          new MiTypeReference(
+            target.packageName,
+            sc
+          ),
           map.offset().value(),
           sc.size()
         );
@@ -119,7 +121,10 @@ final class MiCheckerPassBuild
       case final MiStructureType st -> {
         yield new MiMap(
           map.name().toSimpleName(),
-          st,
+          new MiTypeReference(
+            target.packageName,
+            st
+          ),
           map.offset().value(),
           st.size()
         );
@@ -128,41 +133,60 @@ final class MiCheckerPassBuild
         throw new IllegalStateException();
       }
     };
+
+    context.buildSave(result);
+    return result;
   }
 
-  private MiPackageElementType resolve(
+  private record MiPackageElementReference(
+    MiPackageName packageName,
+    MiPackageElementType element)
+  {
+
+  }
+
+  private MiPackageElementReference resolve(
     final MiCheckerContext context,
     final MiASTTypeReference typeRef)
     throws MiCheckerException
   {
     if (typeRef.prefix().isEmpty()) {
       final var r = context.get(typeRef.name().toSimpleName());
-      return this.buildElement(context, r);
+      return new MiPackageElementReference(
+        context.source().name().toPackageName(),
+        this.buildElement(context, r)
+      );
     }
 
     final var pack =
       context.packageForPrefix(typeRef.prefix().get());
 
-    return pack.type(typeRef.name().toSimpleName())
-      .orElseThrow();
+    final var typeReference =
+      pack.type(typeRef.name().toSimpleName())
+        .orElseThrow();
+
+    return new MiPackageElementReference(
+      typeReference.packageName(),
+      typeReference.type()
+    );
   }
 
-  private MiPackageElementType buildStructure(
+  private MiStructure buildStructure(
     final MiCheckerContext context,
     final MiASTStructure structure)
     throws MiCheckerException
   {
     final var name = structure.name().toSimpleName();
-    final var existing = this.elements.get(name);
+    final var existing = context.buildGet(name);
     if (existing != null) {
-      return existing;
+      return (MiStructure) existing;
     }
 
     final var fields = new ArrayList<MiFieldType>();
     for (final var field : structure.fields()) {
       switch (field) {
         case final MiASTBitField bitField -> {
-          fields.add(this.buildBitField(context, bitField));
+          fields.add(buildBitField(bitField));
         }
         case final MiASTField plainField -> {
           fields.add(this.buildTypedField(context, plainField));
@@ -170,11 +194,13 @@ final class MiCheckerPassBuild
       }
     }
 
-    return new MiStructure(
-      name,
-      context.sizeOf(name).orElseThrow(),
-      fields
-    );
+    fields.sort(Comparator.comparing(MiFieldType::offset));
+
+    final var result =
+      new MiStructure(name, context.sizeOf(name).orElseThrow(), fields);
+
+    context.buildSave(result);
+    return result;
   }
 
   private MiFieldType buildTypedField(
@@ -182,28 +208,28 @@ final class MiCheckerPassBuild
     final MiASTField plainField)
     throws MiCheckerException
   {
+    final var elementReference =
+      this.resolve(context, plainField.type());
+
     return new MiTypedField(
       plainField.name().toSimpleName(),
       plainField.offset().value(),
-      (MiTypeType) this.resolve(context, plainField.type())
+      new MiTypeReference(
+        elementReference.packageName,
+        (MiTypeType) elementReference.element
+      )
     );
   }
 
-  private MiFieldType buildBitField(
-    final MiCheckerContext context,
+  private static MiFieldType buildBitField(
     final MiASTBitField bitField)
   {
     final var ranges = bitField.ranges();
     final var output = new ArrayList<MiBitRangeType>();
     for (final var r : ranges) {
-      output.add(
-        new MiBitRange(
-          r.name().toSimpleName(),
-          r.range().lower(),
-          r.range().upper()
-        )
-      );
+      output.add(new MiBitRange(r.name().toSimpleName(), r.range()));
     }
+    output.sort(Comparator.comparing(MiBitRangeType::range));
 
     return new MiBitField(
       bitField.name().toSimpleName(),
@@ -213,14 +239,14 @@ final class MiCheckerPassBuild
     );
   }
 
-  private MiPackageElementType buildScalar(
+  private static MiScalar buildScalar(
     final MiCheckerContext context,
     final MiASTScalarTypeDeclaration scalar)
   {
     final var name = scalar.name().toSimpleName();
-    final var existing = this.elements.get(name);
+    final var existing = context.buildGet(name);
     if (existing != null) {
-      return existing;
+      return (MiScalar) existing;
     }
 
     final var scalarType =

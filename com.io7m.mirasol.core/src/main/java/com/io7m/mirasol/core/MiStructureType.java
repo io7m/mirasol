@@ -17,6 +17,8 @@
 
 package com.io7m.mirasol.core;
 
+import java.util.List;
+
 /**
  * A structure type declaration.
  */
@@ -24,5 +26,9 @@ package com.io7m.mirasol.core;
 public non-sealed interface MiStructureType
   extends MiTypeType, MiPackageElementType
 {
+  /**
+   * @return The structure fields
+   */
 
+  List<MiFieldType> fields();
 }

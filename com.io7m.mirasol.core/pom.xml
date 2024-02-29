@@ -27,6 +27,10 @@
       <groupId>com.io7m.seltzer</groupId>
       <artifactId>com.io7m.seltzer.api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.io7m.abstand</groupId>
+      <artifactId>com.io7m.abstand.core</artifactId>
+    </dependency>
   </dependencies>
 
 </project>

@@ -26,10 +26,10 @@ module com.io7m.mirasol.parser
   requires com.io7m.mirasol.parser.api;
   requires com.io7m.mirasol.schema;
 
+  requires com.io7m.abstand.core;
   requires com.io7m.anethum.api;
   requires com.io7m.blackthorne.core;
   requires com.io7m.blackthorne.jxe;
-  requires com.io7m.jranges.core;
   requires com.io7m.jxe.core;
   requires com.io7m.lanark.core;
   requires java.xml;

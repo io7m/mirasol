@@ -15,32 +15,26 @@
  */
 
 
-package com.io7m.mirasol.core;
-
-import java.math.BigInteger;
+package com.io7m.mirasol.parser.api;
 
 /**
- * A map declaration.
+ * Serialization options.
+ *
+ * @param hexOffsets Serialize offset values in hexadecimal
  */
 
-public non-sealed interface MiMapType
-  extends MiPackageElementType
+public record MiSerializerOptions(
+  boolean hexOffsets)
 {
-  /**
-   * @return The map name
-   */
-
-  MiSimpleName name();
+  private static final MiSerializerOptions DEFAULT_OPTIONS =
+    new MiSerializerOptions(true);
 
   /**
-   * @return The starting offset of the map
+   * @return The default options
    */
 
-  BigInteger offset();
-
-  /**
-   * @return The map type
-   */
-
-  MiTypeReference type();
+  public static MiSerializerOptions defaultOptions()
+  {
+    return DEFAULT_OPTIONS;
+  }
 }

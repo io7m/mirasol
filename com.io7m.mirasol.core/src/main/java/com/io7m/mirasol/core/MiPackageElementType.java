@@ -24,5 +24,9 @@ package com.io7m.mirasol.core;
 public sealed interface MiPackageElementType
   permits MiMapType, MiScalarType, MiStructureType, MiTypeType
 {
+  /**
+   * @return The name
+   */
 
+  MiSimpleName name();
 }

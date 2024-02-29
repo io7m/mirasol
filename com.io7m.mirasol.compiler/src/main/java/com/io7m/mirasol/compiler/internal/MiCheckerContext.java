@@ -22,6 +22,7 @@ import com.io7m.mirasol.core.MiException;
 import com.io7m.mirasol.core.MiMapType;
 import com.io7m.mirasol.core.MiPackageElementType;
 import com.io7m.mirasol.core.MiPackageName;
+import com.io7m.mirasol.core.MiPackageReference;
 import com.io7m.mirasol.core.MiPackageType;
 import com.io7m.mirasol.core.MiScalarType;
 import com.io7m.mirasol.core.MiSimpleName;
@@ -234,11 +235,27 @@ final class MiCheckerContext
     final var output =
       new MiPackage(this.source.name().toPackageName());
 
+    output.setDocumentation(this.source.documentation().value());
+
+    {
+      final var entries =
+        this.importedPackages.entrySet()
+          .stream()
+          .sorted(Map.Entry.comparingByKey())
+        .toList();
+
+      for (final var entry : entries) {
+        output.addImport(new MiPackageReference(
+          entry.getValue().name(),
+          entry.getKey()
+        ));
+      }
+    }
+
     for (final var entry : this.buildElements.entrySet()) {
-      final var name = entry.getKey();
       switch (entry.getValue()) {
         case final MiMapType map -> {
-
+          output.addMap(map);
         }
         case final MiScalarType sc -> {
           output.addType(sc);
@@ -280,5 +297,11 @@ final class MiCheckerContext
         this.buildElements.put(m.name(), m);
       }
     }
+  }
+
+  public MiPackageElementType buildGet(
+    final MiSimpleName name)
+  {
+    return this.buildElements.get(name);
   }
 }

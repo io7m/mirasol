@@ -25,5 +25,15 @@ public sealed interface MiASTFieldType
   extends MiASTElementType
   permits MiASTField, MiASTBitField
 {
+  /**
+   * @return The field name
+   */
 
+  MiASTSimpleName name();
+
+  /**
+   * @return The field offset
+   */
+
+  MiASTOffset offset();
 }

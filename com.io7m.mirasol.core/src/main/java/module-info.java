@@ -22,6 +22,7 @@ module com.io7m.mirasol.core
 {
   requires com.io7m.lanark.core;
   requires com.io7m.seltzer.api;
+  requires com.io7m.abstand.core;
 
   exports com.io7m.mirasol.core;
 }

@@ -17,6 +17,8 @@
 
 package com.io7m.mirasol.core;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -24,6 +26,7 @@ import java.util.Optional;
  */
 
 public interface MiPackageType
+  extends Collection<MiPackageElementType>, MiDocumentedType
 {
   /**
    * @return The package name
@@ -32,12 +35,19 @@ public interface MiPackageType
   MiPackageName name();
 
   /**
+   * @return The list of imported packages
+   */
+
+  List<MiPackageReference> imports();
+
+  /**
    * @param name The type name
    *
    * @return The type, if one exists
    */
 
-  Optional<MiTypeType> type(MiSimpleName name);
+  Optional<MiTypeReference> type(
+    MiSimpleName name);
 
   /**
    * @param name The object name
@@ -45,5 +55,6 @@ public interface MiPackageType
    * @return The object, if one exists
    */
 
-  Optional<MiPackageElementType> object(MiSimpleName name);
+  Optional<MiPackageElementType> object(
+    MiSimpleName name);
 }

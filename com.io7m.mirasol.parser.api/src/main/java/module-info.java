@@ -22,9 +22,9 @@ module com.io7m.mirasol.parser.api
 {
   requires com.io7m.mirasol.core;
 
+  requires com.io7m.abstand.core;
   requires com.io7m.anethum.api;
   requires com.io7m.lanark.core;
-  requires com.io7m.jranges.core;
 
   exports com.io7m.mirasol.parser.api;
   exports com.io7m.mirasol.parser.api.ast;

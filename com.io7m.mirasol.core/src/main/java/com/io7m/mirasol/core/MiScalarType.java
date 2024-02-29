@@ -24,5 +24,9 @@ package com.io7m.mirasol.core;
 public non-sealed interface MiScalarType
   extends MiTypeType, MiPackageElementType
 {
+  /**
+   * @return The base scalar kind
+   */
 
+  MiSimpleName kind();
 }

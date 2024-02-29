@@ -38,6 +38,8 @@ import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CHECKER_TYPE_REFE
 import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CHECKER_TYPE_REFERENCE_NONEXISTENT;
 import static com.io7m.mirasol.strings.MiStringConstants.MAP;
 import static com.io7m.mirasol.strings.MiStringConstants.PREFIX;
+import static com.io7m.mirasol.strings.MiStringConstants.SOURCE;
+import static com.io7m.mirasol.strings.MiStringConstants.TARGET;
 import static com.io7m.mirasol.strings.MiStringConstants.TYPE;
 
 /**
@@ -165,6 +167,8 @@ final class MiCheckerPassBindings
       final var source = new TypePeer(structure.name().toSimpleName());
       final var target = new TypePeer(type.name().toSimpleName());
       try {
+        this.graph.addVertex(source);
+        this.graph.addVertex(target);
         this.graph.addEdge(
           source,
           target,
@@ -185,6 +189,15 @@ final class MiCheckerPassBindings
   {
     final var attributes = new TreeMap<String, String>();
     context.putLexicalPosition(attributes, structure.lexical());
+
+    attributes.put(
+      context.format(SOURCE),
+      source.name.value()
+    );
+    attributes.put(
+      context.format(TARGET),
+      target.name.value()
+    );
 
     context.error(
       new SStructuredError<>(

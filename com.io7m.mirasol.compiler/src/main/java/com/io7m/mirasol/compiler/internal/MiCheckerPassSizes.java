@@ -16,9 +16,15 @@
 
 package com.io7m.mirasol.compiler.internal;
 
+import com.io7m.abstand.core.IntervalB;
+import com.io7m.abstand.core.IntervalTree;
+import com.io7m.abstand.core.IntervalTreeDebuggableType;
+import com.io7m.abstand.core.IntervalType;
 import com.io7m.jdeferthrow.core.ExceptionTracker;
 import com.io7m.mirasol.parser.api.ast.MiASTBitField;
+import com.io7m.mirasol.parser.api.ast.MiASTBitRange;
 import com.io7m.mirasol.parser.api.ast.MiASTField;
+import com.io7m.mirasol.parser.api.ast.MiASTFieldType;
 import com.io7m.mirasol.parser.api.ast.MiASTImportDeclaration;
 import com.io7m.mirasol.parser.api.ast.MiASTMap;
 import com.io7m.mirasol.parser.api.ast.MiASTPackageElementType;
@@ -28,11 +34,23 @@ import com.io7m.mirasol.parser.api.ast.MiASTTypeReference;
 import com.io7m.seltzer.api.SStructuredError;
 
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 
+import static com.io7m.mirasol.strings.MiStringConstants.BIT_FIELD;
+import static com.io7m.mirasol.strings.MiStringConstants.BIT_FIELD_CONFLICTING;
+import static com.io7m.mirasol.strings.MiStringConstants.BIT_FIELD_CURRENT;
+import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CHECKER_BIT_FIELD_OVERLAP;
+import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CHECKER_BIT_FIELD_SIZE_INSUFFICIENT;
+import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CHECKER_FIELD_OVERLAP;
 import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CHECKER_SIZE_POSITIVE;
+import static com.io7m.mirasol.strings.MiStringConstants.FIELD_CONFLICTING;
+import static com.io7m.mirasol.strings.MiStringConstants.FIELD_CURRENT;
 import static com.io7m.mirasol.strings.MiStringConstants.SIZE_BITS;
+import static com.io7m.mirasol.strings.MiStringConstants.SIZE_OCTETS_ACTUAL;
+import static com.io7m.mirasol.strings.MiStringConstants.SIZE_OCTETS_REQUIRED;
 import static com.io7m.mirasol.strings.MiStringConstants.TYPE;
 
 /**
@@ -121,7 +139,7 @@ final class MiCheckerPassSizes
       pack.type(typeRef.name().toSimpleName())
         .orElseThrow();
 
-    return type.size();
+    return type.type().size();
   }
 
   private BigInteger sizeOfStructure(
@@ -135,27 +153,327 @@ final class MiCheckerPassSizes
       return existing.get();
     }
 
+    final var tracker =
+      new ExceptionTracker<MiCheckerException>();
+    final var intervals =
+      IntervalTree.<BigInteger>create();
+    final var intervalsByField =
+      new HashMap<IntervalB, MiASTFieldType>();
+
     var sizeOctets = BigInteger.ZERO;
 
     for (final var field : structure.fields()) {
       switch (field) {
         case final MiASTBitField bitField -> {
-          sizeOctets = sizeOctets.max(
-            bitField.offset().value()
-              .add(bitField.sizeOctets())
-          );
+          validateBitField(context, structure, bitField);
+
+          final var fieldSize =
+            bitField.sizeOctets();
+          final var fieldOffset =
+            bitField.offset().value();
+
+          try {
+            validateFieldOverlap(
+              context,
+              structure,
+              bitField,
+              fieldOffset,
+              fieldSize,
+              intervalsByField,
+              intervals);
+          } catch (final MiCheckerException e) {
+            tracker.addException(e);
+          }
+
+          sizeOctets = sizeOctets.max(fieldOffset.add(fieldSize));
         }
+
         case final MiASTField plainField -> {
-          sizeOctets = sizeOctets.max(
-            plainField.offset().value()
-              .add(this.sizeOf(context, plainField.type()))
-          );
+          final var fieldSize =
+            this.sizeOf(context, plainField.type());
+          final var fieldOffset =
+            plainField.offset().value();
+
+          try {
+            validateFieldOverlap(
+              context,
+              structure,
+              plainField,
+              fieldOffset,
+              fieldSize,
+              intervalsByField,
+              intervals
+            );
+          } catch (final MiCheckerException e) {
+            tracker.addException(e);
+          }
+
+          sizeOctets = sizeOctets.max(fieldOffset.add(fieldSize));
         }
       }
     }
 
     context.sizeSave(name, sizeOctets);
+    tracker.throwIfNecessary();
     return sizeOctets;
+  }
+
+  private static void validateFieldOverlap(
+    final MiCheckerContext context,
+    final MiASTStructure structure,
+    final MiASTFieldType bitField,
+    final BigInteger fieldOffset,
+    final BigInteger fieldSize,
+    final HashMap<IntervalB, MiASTFieldType> intervalsByField,
+    final IntervalTreeDebuggableType<BigInteger> intervals)
+    throws MiCheckerException
+  {
+    final var fieldInterval =
+      new IntervalB(fieldOffset, fieldOffset.add(subtractOne(fieldSize)));
+
+    final var conflicting = intervalsByField.get(fieldInterval);
+    if (conflicting != null) {
+      throw errorFieldOverlap(context, structure, bitField, conflicting);
+    }
+
+    intervals.add(fieldInterval);
+    intervalsByField.put(fieldInterval, bitField);
+
+    final var overlaps =
+      intervals.overlapping(fieldInterval)
+        .stream()
+        .filter(r -> !Objects.equals(r, fieldInterval))
+        .toList();
+
+    if (!overlaps.isEmpty()) {
+      final var conflictingOver = intervalsByField.get(overlaps.get(0));
+      throw errorFieldOverlap(context, structure, bitField, conflictingOver);
+    }
+  }
+
+  private static BigInteger subtractOne(
+    final BigInteger x)
+  {
+    return BigInteger.ZERO.max(x.subtract(BigInteger.ONE));
+  }
+
+  /**
+   * Validate that all constraints hold for a given bit field.
+   */
+
+  private static void validateBitField(
+    final MiCheckerContext context,
+    final MiASTStructure structure,
+    final MiASTBitField bitField)
+    throws MiCheckerException
+  {
+    final var tracker =
+      new ExceptionTracker<MiCheckerException>();
+    final var intervals =
+      IntervalTree.<BigInteger>create();
+    final var intervalsByField =
+      new HashMap<IntervalB, MiASTBitRange>();
+
+    validateBitFieldRangesNoOverlap(
+      context,
+      tracker, structure,
+      bitField,
+      intervalsByField,
+      intervals
+    );
+
+    try {
+      validateBitFieldSizeSufficient(
+        context, structure, bitField, intervals.maximum()
+      );
+    } catch (final MiCheckerException e) {
+      tracker.addException(e);
+    }
+
+    tracker.throwIfNecessary();
+  }
+
+  /**
+   * Validate that there are no overlapping bit ranges in the given bit field.
+   */
+
+  private static void validateBitFieldRangesNoOverlap(
+    final MiCheckerContext context,
+    final ExceptionTracker<MiCheckerException> tracker,
+    final MiASTStructure structure,
+    final MiASTBitField bitField,
+    final HashMap<IntervalB, MiASTBitRange> intervalsByField,
+    final IntervalTreeDebuggableType<BigInteger> intervals)
+  {
+    for (final var current : bitField.ranges()) {
+      final var interval = current.range();
+      final var conflicting = intervalsByField.get(interval);
+      if (conflicting != null) {
+        tracker.addException(
+          errorBitRangeOverlap(context, structure, current, conflicting)
+        );
+      }
+
+      intervalsByField.put(interval, current);
+      intervals.add(interval);
+
+      final var overlaps =
+        intervals.overlapping(interval)
+          .stream()
+          .filter(r -> !Objects.equals(r, current.range()))
+          .toList();
+
+      if (!overlaps.isEmpty()) {
+        final var conflictingOver = intervalsByField.get(overlaps.get(0));
+        tracker.addException(
+          errorBitRangeOverlap(context, structure, current, conflictingOver)
+        );
+      }
+    }
+  }
+
+  /**
+   * Validate that specified size of a bit field is large enough to contain
+   * all the bit ranges.
+   */
+
+  private static void validateBitFieldSizeSufficient(
+    final MiCheckerContext context,
+    final MiASTStructure structure,
+    final MiASTBitField bitField,
+    final Optional<IntervalType<BigInteger>> maximumOpt)
+    throws MiCheckerException
+  {
+    if (maximumOpt.isPresent()) {
+      final var maximum =
+        maximumOpt.get();
+      final var q =
+        maximum.upper().divideAndRemainder(BigInteger.valueOf(8L));
+
+      final var octets = q[0];
+      final var remainder = q[1];
+
+      final BigInteger octetsRequired;
+      if (remainder.compareTo(BigInteger.ZERO) > 0) {
+        octetsRequired = octets.add(BigInteger.ONE);
+      } else {
+        octetsRequired = octets;
+      }
+
+      if (octetsRequired.compareTo(bitField.sizeOctets()) > 0) {
+        throw errorBitFieldSizeInsufficient(
+          context,
+          structure,
+          bitField,
+          octetsRequired,
+          bitField.sizeOctets()
+        );
+      }
+    }
+  }
+
+  private static MiCheckerException errorBitFieldSizeInsufficient(
+    final MiCheckerContext context,
+    final MiASTStructure structure,
+    final MiASTBitField bitField,
+    final BigInteger required,
+    final BigInteger provided)
+  {
+    final var attributes = new TreeMap<String, String>();
+    context.putLexicalPosition(attributes, bitField.lexical());
+
+    attributes.put(
+      context.format(TYPE),
+      structure.name().value()
+    );
+    attributes.put(
+      context.format(BIT_FIELD),
+      bitField.name().value()
+    );
+    attributes.put(
+      context.format(SIZE_OCTETS_REQUIRED),
+      required.toString()
+    );
+    attributes.put(
+      context.format(SIZE_OCTETS_ACTUAL),
+      provided.toString()
+    );
+
+    return context.error(
+      new SStructuredError<>(
+        "error-bit-field-size-insufficient",
+        context.format(ERROR_CHECKER_BIT_FIELD_SIZE_INSUFFICIENT),
+        attributes,
+        Optional.empty(),
+        Optional.empty()
+      )
+    );
+  }
+
+  private static MiCheckerException errorBitRangeOverlap(
+    final MiCheckerContext context,
+    final MiASTStructure structure,
+    final MiASTBitRange current,
+    final MiASTBitRange conflicting)
+  {
+    final var attributes = new TreeMap<String, String>();
+    context.putLexicalPosition(attributes, current.lexical());
+
+    attributes.put(
+      context.format(TYPE),
+      structure.name().value()
+    );
+    attributes.put(
+      context.format(BIT_FIELD_CURRENT),
+      current.name().value()
+    );
+    attributes.put(
+      context.format(BIT_FIELD_CONFLICTING),
+      conflicting.name().value()
+    );
+
+    return context.error(
+      new SStructuredError<>(
+        "error-bit-field-overlap",
+        context.format(ERROR_CHECKER_BIT_FIELD_OVERLAP),
+        attributes,
+        Optional.empty(),
+        Optional.empty()
+      )
+    );
+  }
+
+  private static MiCheckerException errorFieldOverlap(
+    final MiCheckerContext context,
+    final MiASTStructure structure,
+    final MiASTFieldType current,
+    final MiASTFieldType conflicting)
+  {
+    final var attributes = new TreeMap<String, String>();
+    context.putLexicalPosition(attributes, current.lexical());
+
+    attributes.put(
+      context.format(TYPE),
+      structure.name().value()
+    );
+    attributes.put(
+      context.format(FIELD_CURRENT),
+      current.name().value()
+    );
+    attributes.put(
+      context.format(FIELD_CONFLICTING),
+      conflicting.name().value()
+    );
+
+    return context.error(
+      new SStructuredError<>(
+        "error-field-overlap",
+        context.format(ERROR_CHECKER_FIELD_OVERLAP),
+        attributes,
+        Optional.empty(),
+        Optional.empty()
+      )
+    );
   }
 
   private static BigInteger sizeOfScalar(

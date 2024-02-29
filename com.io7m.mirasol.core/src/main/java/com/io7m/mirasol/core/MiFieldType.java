@@ -17,6 +17,8 @@
 
 package com.io7m.mirasol.core;
 
+import com.io7m.abstand.core.IntervalB;
+
 import java.math.BigInteger;
 
 /**
@@ -43,4 +45,16 @@ public sealed interface MiFieldType
    */
 
   BigInteger size();
+
+  /**
+   * @return The inclusive octet range covered by this field
+   */
+
+  default IntervalB range()
+  {
+    return new IntervalB(
+      this.offset(),
+      this.offset().add(this.size().subtract(BigInteger.ONE))
+    );
+  }
 }

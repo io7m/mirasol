@@ -15,31 +15,43 @@
  */
 
 
-package com.io7m.mirasol.compiler.internal;
+package com.io7m.mirasol.parser;
 
-import com.io7m.mirasol.core.MiSimpleName;
-import com.io7m.mirasol.core.MiTypeReference;
-import com.io7m.mirasol.core.MiTypedFieldType;
+import com.io7m.mirasol.parser.api.MiSerializerFactoryType;
+import com.io7m.mirasol.parser.api.MiSerializerOptions;
+import com.io7m.mirasol.parser.api.MiSerializerType;
+import com.io7m.mirasol.parser.internal.MiSerializer;
 
-import java.math.BigInteger;
+import java.io.OutputStream;
+import java.net.URI;
 import java.util.Objects;
 
-record MiTypedField(
-  MiSimpleName name,
-  BigInteger offset,
-  MiTypeReference type)
-  implements MiTypedFieldType
+/**
+ * The default package serializers.
+ */
+
+public final class MiSerializers
+  implements MiSerializerFactoryType
 {
-  MiTypedField
+  /**
+   * The default package serializers.
+   */
+
+  public MiSerializers()
   {
-    Objects.requireNonNull(name, "name");
-    Objects.requireNonNull(offset, "offset");
-    Objects.requireNonNull(type, "type");
+
   }
 
   @Override
-  public BigInteger size()
+  public MiSerializerType createSerializerWithContext(
+    final MiSerializerOptions context,
+    final URI target,
+    final OutputStream stream)
   {
-    return this.type.type().size();
+    return new MiSerializer(
+      Objects.requireNonNullElse(context, MiSerializerOptions.defaultOptions()),
+      Objects.requireNonNull(target, "target"),
+      Objects.requireNonNull(stream, "stream")
+    );
   }
 }

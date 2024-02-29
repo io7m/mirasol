@@ -25,7 +25,7 @@ import com.io7m.mirasol.core.MiPackageType;
  */
 
 public interface MiSerializerFactoryType
-  extends SerializerFactoryType<Void, MiPackageType, MiSerializerType>
+  extends SerializerFactoryType<MiSerializerOptions, MiPackageType, MiSerializerType>
 {
 
 }

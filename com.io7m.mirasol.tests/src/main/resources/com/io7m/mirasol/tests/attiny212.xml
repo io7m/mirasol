@@ -11,6 +11,8 @@
           As="C"/>
 
   <Structure Name="GPIO">
+    <SizeAssertion Value="4"/>
+
     <Field Name="GPIOR0">
       <OffsetHex Value="0x0"/>
       <Type Prefix="C"
@@ -34,6 +36,8 @@
   </Structure>
 
   <Structure Name="FUSE">
+    <SizeAssertion Value="11"/>
+
     <BitField Name="WDTCFG"
               SizeOctets="1">
       <Offset Value="0"/>

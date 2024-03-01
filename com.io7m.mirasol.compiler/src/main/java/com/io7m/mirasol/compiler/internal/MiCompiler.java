@@ -22,6 +22,7 @@ import com.io7m.mirasol.compiler.api.MiCompilerResultType;
 import com.io7m.mirasol.compiler.api.MiCompilerType;
 import com.io7m.mirasol.core.MiPackageType;
 import com.io7m.mirasol.loader.api.MiLoaderType;
+import com.io7m.mirasol.parser.api.MiLexical;
 import com.io7m.mirasol.parser.api.MiParserFactoryType;
 import com.io7m.mirasol.parser.api.ast.MiASTPackageDeclaration;
 import com.io7m.mirasol.strings.MiStrings;
@@ -73,7 +74,14 @@ public final class MiCompiler implements MiCompilerType
 
     final MiASTPackageDeclaration parsed;
     try {
-      parsed = this.parsers.parse(source, stream, errors::add);
+      final var parser =
+        this.parsers.createParserWithContext(
+          MiLexical.PRESERVE_LEXICAL,
+          source,
+          stream,
+          errors::add
+        );
+      parsed = parser.execute();
     } catch (final ParsingException e) {
       return new MiCompilerResultType.Failed<>(errors);
     }

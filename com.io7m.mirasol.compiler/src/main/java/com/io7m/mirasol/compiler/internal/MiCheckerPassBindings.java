@@ -37,6 +37,7 @@ import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CHECKER_TYPE_REFE
 import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CHECKER_TYPE_REFERENCE_MAP;
 import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CHECKER_TYPE_REFERENCE_NONEXISTENT;
 import static com.io7m.mirasol.strings.MiStringConstants.MAP;
+import static com.io7m.mirasol.strings.MiStringConstants.PACKAGE;
 import static com.io7m.mirasol.strings.MiStringConstants.PREFIX;
 import static com.io7m.mirasol.strings.MiStringConstants.SOURCE;
 import static com.io7m.mirasol.strings.MiStringConstants.TARGET;
@@ -191,6 +192,10 @@ final class MiCheckerPassBindings
     context.putLexicalPosition(attributes, structure.lexical());
 
     attributes.put(
+      context.format(PACKAGE),
+      context.source().name().toPackageName().toString()
+    );
+    attributes.put(
       context.format(SOURCE),
       source.name.value()
     );
@@ -296,6 +301,10 @@ final class MiCheckerPassBindings
     final var attributes = new TreeMap<String, String>();
     context.putLexicalPosition(attributes, type.lexical());
 
+    attributes.put(
+      context.format(PACKAGE),
+      context.source().name().toPackageName().toString()
+    );
     type.prefix().ifPresent(name -> {
       attributes.put(
         context.format(PREFIX),
@@ -329,6 +338,10 @@ final class MiCheckerPassBindings
     final var attributes = new TreeMap<String, String>();
     context.putLexicalPosition(attributes, type.lexical());
 
+    attributes.put(
+      context.format(PACKAGE),
+      context.source().name().toPackageName().toString()
+    );
     type.prefix().ifPresent(name -> {
       attributes.put(
         context.format(PREFIX),

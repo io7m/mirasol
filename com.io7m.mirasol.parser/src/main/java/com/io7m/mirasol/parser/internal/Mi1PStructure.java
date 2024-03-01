@@ -25,12 +25,14 @@ import com.io7m.jlexing.core.LexicalPosition;
 import com.io7m.mirasol.parser.api.ast.MiASTDocumentation;
 import com.io7m.mirasol.parser.api.ast.MiASTFieldType;
 import com.io7m.mirasol.parser.api.ast.MiASTSimpleName;
+import com.io7m.mirasol.parser.api.ast.MiASTSizeAssertion;
 import com.io7m.mirasol.parser.api.ast.MiASTStructure;
 import org.xml.sax.Attributes;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.io7m.mirasol.parser.internal.Mi1.position;
 
@@ -45,6 +47,7 @@ public final class Mi1PStructure
   private MiASTSimpleName name;
   private LexicalPosition<URI> lexical;
   private MiASTDocumentation documentation;
+  private Optional<MiASTSizeAssertion> sizeAssertion;
 
   /**
    * Element handler.
@@ -59,6 +62,8 @@ public final class Mi1PStructure
       new ArrayList<>();
     this.documentation =
       MiASTDocumentation.none();
+    this.sizeAssertion =
+      Optional.empty();
   }
 
   @Override
@@ -74,6 +79,14 @@ public final class Mi1PStructure
       Map.entry(
         Mi1.element("Field"),
         Mi1PField::new
+      ),
+      Map.entry(
+        Mi1.element("SizeAssertion"),
+        Mi1PSizeAssertion::new
+      ),
+      Map.entry(
+        Mi1.element("SizeAssertionHex"),
+        Mi1PSizeAssertionHex::new
       ),
       Map.entry(
         Mi1.element("BitField"),
@@ -105,6 +118,9 @@ public final class Mi1PStructure
       case final MiASTFieldType o -> {
         this.fields.add(o);
       }
+      case final MiASTSizeAssertion s -> {
+        this.sizeAssertion = Optional.of(s);
+      }
       default -> {
         throw new IllegalStateException(
           "Unexpected value: %s".formatted(result));
@@ -120,6 +136,7 @@ public final class Mi1PStructure
     return new MiASTStructure(
       this.lexical,
       this.documentation,
+      this.sizeAssertion,
       this.name,
       this.fields
     );

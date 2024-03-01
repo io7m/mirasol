@@ -14,21 +14,27 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+import com.io7m.mirasol.extractor.api.MiExtractorFactoryType;
+
 /**
  * Machine-readable memory map documentation (Test suite)
  */
 
 open module com.io7m.mirasol.tests
 {
+  requires com.io7m.mirasol.cmdline;
   requires com.io7m.mirasol.compiler.api;
   requires com.io7m.mirasol.compiler;
   requires com.io7m.mirasol.core;
+  requires com.io7m.mirasol.extractor.api;
+  requires com.io7m.mirasol.extractor.cpp;
   requires com.io7m.mirasol.loader.api;
   requires com.io7m.mirasol.parser.api;
   requires com.io7m.mirasol.parser;
   requires com.io7m.mirasol.schema;
   requires com.io7m.mirasol.strings;
 
+  requires com.io7m.quarrel.core;
   requires com.io7m.anethum.api;
   requires com.io7m.jxe.core;
   requires org.slf4j;
@@ -37,6 +43,8 @@ open module com.io7m.mirasol.tests
   requires transitive org.junit.jupiter.engine;
   requires transitive org.junit.platform.commons;
   requires transitive org.junit.platform.engine;
+
+  uses MiExtractorFactoryType;
 
   exports com.io7m.mirasol.tests;
 }

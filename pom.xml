@@ -21,9 +21,12 @@
   <url>https://www.io7m.com/software/mirasol</url>
 
   <modules>
+    <module>com.io7m.mirasol.cmdline</module>
     <module>com.io7m.mirasol.compiler.api</module>
     <module>com.io7m.mirasol.compiler</module>
     <module>com.io7m.mirasol.core</module>
+    <module>com.io7m.mirasol.extractor.api</module>
+    <module>com.io7m.mirasol.extractor.cpp</module>
     <module>com.io7m.mirasol.loader.api</module>
     <module>com.io7m.mirasol.parser.api</module>
     <module>com.io7m.mirasol.parser</module>
@@ -35,6 +38,8 @@
   <properties>
     <com.io7m.blackthorne.version>2.0.0</com.io7m.blackthorne.version>
     <com.io7m.jxtrand.version>2.0.0</com.io7m.jxtrand.version>
+    <com.io7m.quarrel.version>1.5.0</com.io7m.quarrel.version>
+
     <io7m.api.previousVersion>1.0.1</io7m.api.previousVersion>
     <io7m.java.targetJavaVersion>21</io7m.java.targetJavaVersion>
   </properties>
@@ -114,10 +119,42 @@
         <version>1.0.0-beta0001</version>
       </dependency>
 
+      <!-- CLI -->
+      <dependency>
+        <groupId>com.io7m.quarrel</groupId>
+        <artifactId>com.io7m.quarrel.core</artifactId>
+        <version>${com.io7m.quarrel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.quarrel</groupId>
+        <artifactId>com.io7m.quarrel.ext.logback</artifactId>
+        <version>${com.io7m.quarrel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.quarrel</groupId>
+        <artifactId>com.io7m.quarrel.ext.xstructural</artifactId>
+        <version>${com.io7m.quarrel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.jade</groupId>
+        <artifactId>com.io7m.jade.api</artifactId>
+        <version>1.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.jade</groupId>
+        <artifactId>com.io7m.jade.vanilla</artifactId>
+        <version>1.0.2</version>
+      </dependency>
+
       <!-- Parsing -->
       <dependency>
         <groupId>com.io7m.anethum</groupId>
         <artifactId>com.io7m.anethum.api</artifactId>
+        <version>1.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.anethum</groupId>
+        <artifactId>com.io7m.anethum.slf4j</artifactId>
         <version>1.1.0</version>
       </dependency>
       <dependency>
@@ -195,6 +232,12 @@
           <groupId>com.io7m.jxtrand</groupId>
           <artifactId>com.io7m.jxtrand.maven_plugin</artifactId>
           <version>${com.io7m.jxtrand.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>com.io7m.stmp</groupId>
+          <artifactId>string-template-maven-plugin</artifactId>
+          <version>1.2.0</version>
         </plugin>
 
         <plugin>

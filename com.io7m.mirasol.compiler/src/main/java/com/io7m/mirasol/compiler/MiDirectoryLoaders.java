@@ -23,6 +23,7 @@ import com.io7m.mirasol.loader.api.MiLoaderType;
 import com.io7m.mirasol.strings.MiStrings;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -33,20 +34,20 @@ import java.util.Objects;
 public final class MiDirectoryLoaders implements MiLoaderFactoryType
 {
   private final MiCompilers compilers;
-  private final Path directory;
+  private final List<Path> directories;
   private final MiStrings strings;
 
   /**
-   * A loader implementation that reads package files from a directory.
+   * A loader implementation that reads package files from list of directories.
    *
-   * @param inDirectory The directory
+   * @param inDirectories The directories
    */
 
   public MiDirectoryLoaders(
-    final Path inDirectory)
+    final List<Path> inDirectories)
   {
-    this.directory =
-      Objects.requireNonNull(inDirectory, "directory");
+    this.directories =
+      Objects.requireNonNull(inDirectories, "directory");
     this.compilers =
       new MiCompilers();
     this.strings =
@@ -57,10 +58,9 @@ public final class MiDirectoryLoaders implements MiLoaderFactoryType
   public MiLoaderType create()
   {
     return new MiDirectoryLoader(
-      this,
       this.strings,
       this.compilers,
-      this.directory
+      this.directories
     );
   }
 }

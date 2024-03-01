@@ -22,12 +22,14 @@ import com.io7m.jlexing.core.LexicalPosition;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A structure declaration.
  *
  * @param lexical       The lexical position
  * @param documentation The documentation annotation
+ * @param sizeAssertion The size assertion
  * @param name          The structure name
  * @param fields        The structure fields
  */
@@ -35,6 +37,7 @@ import java.util.Objects;
 public record MiASTStructure(
   LexicalPosition<URI> lexical,
   MiASTDocumentation documentation,
+  Optional<MiASTSizeAssertion> sizeAssertion,
   MiASTSimpleName name,
   List<MiASTFieldType> fields)
   implements MiASTDocumentedType, MiASTPackageElementType, MiASTTypeElementType
@@ -44,6 +47,7 @@ public record MiASTStructure(
    *
    * @param lexical       The lexical position
    * @param documentation The documentation annotation
+   * @param sizeAssertion The size assertion
    * @param name          The structure name
    * @param fields        The structure fields
    */
@@ -52,6 +56,7 @@ public record MiASTStructure(
   {
     Objects.requireNonNull(lexical, "lexical");
     Objects.requireNonNull(documentation, "documentation");
+    Objects.requireNonNull(sizeAssertion, "sizeAssertion");
     Objects.requireNonNull(name, "name");
     Objects.requireNonNull(fields, "fields");
   }

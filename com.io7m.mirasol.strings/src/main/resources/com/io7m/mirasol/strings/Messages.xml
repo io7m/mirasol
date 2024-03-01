@@ -7,6 +7,7 @@
   <entry key="error_checker_bit_field_size_insufficient">The specified size of the bit field is insufficient to hold the specified bit ranges.</entry>
   <entry key="error_checker_field_overlap">The range of this field overlaps at least one other field.</entry>
   <entry key="error_checker_import_missing">No package has been imported using the given prefix.</entry>
+  <entry key="error_checker_size_assertion_failed">Size assertion failed; the size of the structure does not match the asserted size.</entry>
   <entry key="error_checker_size_positive">Sizes of types must be positive.</entry>
   <entry key="error_checker_type_reference_cyclic">Type reference would introduce a cycle.</entry>
   <entry key="error_checker_type_reference_map">Types cannot refer to memory maps.</entry>
@@ -15,6 +16,7 @@
   <entry key="error_circular_path">Package Path [{0}]</entry>
   <entry key="error_compilation">Compilation failed.</entry>
   <entry key="error_io">I/O error.</entry>
+  <entry key="error_no_such_package">No such package.</entry>
 
   <entry key="bit_field">Bit Field</entry>
   <entry key="bit_field_conflicting">Bit Field (Conflicting)</entry>
@@ -28,6 +30,7 @@
   <entry key="map">Map</entry>
   <entry key="package">Package</entry>
   <entry key="prefix">Prefix</entry>
+  <entry key="search_path_indexed">Search Path [{0}]</entry>
   <entry key="size_bits">Size (Bits)</entry>
   <entry key="size_octets_actual">Size (Octets Actual)</entry>
   <entry key="size_octets_required">Size (Octets Required)</entry>

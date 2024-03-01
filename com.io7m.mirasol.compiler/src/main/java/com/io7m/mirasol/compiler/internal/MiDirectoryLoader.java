@@ -24,12 +24,11 @@ import com.io7m.mirasol.compiler.api.MiCompilerResultType.Succeeded;
 import com.io7m.mirasol.core.MiException;
 import com.io7m.mirasol.core.MiPackageName;
 import com.io7m.mirasol.core.MiPackageType;
-import com.io7m.mirasol.loader.api.MiLoaderFactoryType;
 import com.io7m.mirasol.loader.api.MiLoaderType;
-import com.io7m.mirasol.strings.MiStringConstants;
 import com.io7m.mirasol.strings.MiStrings;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,42 +37,44 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 
+import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CIRCULAR_DEPENDENCY;
+import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CIRCULAR_PATH;
+import static com.io7m.mirasol.strings.MiStringConstants.ERROR_IO;
+import static com.io7m.mirasol.strings.MiStringConstants.ERROR_NO_SUCH_PACKAGE;
+import static com.io7m.mirasol.strings.MiStringConstants.PACKAGE;
+import static com.io7m.mirasol.strings.MiStringConstants.SEARCH_PATH_INDEXED;
+
 /**
  * A directory-based package loader.
  */
 
 public final class MiDirectoryLoader implements MiLoaderType
 {
-  private final MiLoaderFactoryType loaders;
   private final MiStrings strings;
   private final MiCompilerFactoryType compilers;
-  private final Path directory;
+  private final List<Path> directories;
   private final HashMap<MiPackageName, MiPackageType> packageCache;
   private final ArrayList<MiPackageName> packageStack;
 
   /**
    * A directory-based package loader.
    *
-   * @param inLoaders   The loaders
-   * @param inDirectory The source directory
+   * @param inDirectories The source directories
    * @param inCompilers The compilers
    * @param inStrings   The strings
    */
 
   public MiDirectoryLoader(
-    final MiLoaderFactoryType inLoaders,
     final MiStrings inStrings,
     final MiCompilerFactoryType inCompilers,
-    final Path inDirectory)
+    final List<Path> inDirectories)
   {
-    this.loaders =
-      Objects.requireNonNull(inLoaders, "inLoaders");
     this.strings =
       Objects.requireNonNull(inStrings, "strings");
     this.compilers =
       Objects.requireNonNull(inCompilers, "compilers");
-    this.directory =
-      Objects.requireNonNull(inDirectory, "directory");
+    this.directories =
+      Objects.requireNonNull(inDirectories, "directories");
     this.packageCache =
       new HashMap<>();
     this.packageStack =
@@ -100,42 +101,74 @@ public final class MiDirectoryLoader implements MiLoaderType
 
       final var fileName =
         name + ".mpx";
-      final var path =
-        this.directory.resolve(fileName);
 
-      final var compiler =
-        this.compilers.create(this);
+      for (final var directory : this.directories) {
+        final var path = directory.resolve(fileName);
+        if (!Files.isRegularFile(path)) {
+          continue;
+        }
 
-      final MiCompilerResultType<MiPackageType> compiled;
-      try {
-        compiled = compiler.compileFile(path);
-      } catch (final IOException e) {
-        throw this.errorIO(name, e);
+        final var compiler =
+          this.compilers.create(this);
+
+        final MiCompilerResultType<MiPackageType> compiled;
+        try {
+          compiled = compiler.compileFile(path);
+        } catch (final IOException e) {
+          throw this.errorIO(name, e);
+        }
+
+        return switch (compiled) {
+          case final Failed<MiPackageType> failed -> {
+            final var errors =
+              new ArrayList<>(failed.errors());
+            final var error =
+              errors.removeFirst();
+
+            throw new MiException(
+              error.message(),
+              error.errorCode(),
+              error.attributes(),
+              error.remediatingAction(),
+              errors
+            );
+          }
+          case final Succeeded<MiPackageType> succeeded -> {
+            this.packageCache.put(name, succeeded.result());
+            yield succeeded.result();
+          }
+        };
       }
 
-      return switch (compiled) {
-        case final Failed<MiPackageType> failed -> {
-          final var errors =
-            new ArrayList<>(failed.errors());
-          final var error =
-            errors.removeFirst();
-
-          throw new MiException(
-            error.message(),
-            error.errorCode(),
-            error.attributes(),
-            error.remediatingAction(),
-            errors
-          );
-        }
-        case final Succeeded<MiPackageType> succeeded -> {
-          this.packageCache.put(name, succeeded.result());
-          yield succeeded.result();
-        }
-      };
+      throw this.errorNoSuchPackage(name);
     } finally {
       this.packageStack.removeLast();
     }
+  }
+
+  private MiException errorNoSuchPackage(
+    final MiPackageName name)
+  {
+    final var attributes = new TreeMap<String, String>();
+    attributes.put(
+      this.strings.format(PACKAGE),
+      name.toString()
+    );
+
+    for (var index = 0; index < this.directories.size(); ++index) {
+      attributes.put(
+        this.strings.format(SEARCH_PATH_INDEXED, Integer.valueOf(index)),
+        this.directories.get(index).toString()
+      );
+    }
+
+    return new MiException(
+      this.strings.format(ERROR_NO_SUCH_PACKAGE),
+      "error-no-such-package",
+      attributes,
+      Optional.empty(),
+      List.of()
+    );
   }
 
   private MiException errorIO(
@@ -144,12 +177,12 @@ public final class MiDirectoryLoader implements MiLoaderType
   {
     final var attributes = new TreeMap<String, String>();
     attributes.put(
-      this.strings.format(MiStringConstants.PACKAGE),
+      this.strings.format(PACKAGE),
       name.toString()
     );
 
     return new MiException(
-      this.strings.format(MiStringConstants.ERROR_IO),
+      this.strings.format(ERROR_IO),
       e,
       "error-io",
       attributes,
@@ -163,19 +196,19 @@ public final class MiDirectoryLoader implements MiLoaderType
   {
     final var attributes = new TreeMap<String, String>();
     attributes.put(
-      this.strings.format(MiStringConstants.PACKAGE),
+      this.strings.format(PACKAGE),
       name.toString()
     );
 
     for (int index = 0; index < this.packageStack.size(); ++index) {
       attributes.put(
-        this.strings.format(MiStringConstants.ERROR_CIRCULAR_PATH, index),
+        this.strings.format(ERROR_CIRCULAR_PATH, index),
         this.packageStack.get(index).toString()
       );
     }
 
     return new MiException(
-      this.strings.format(MiStringConstants.ERROR_CIRCULAR_DEPENDENCY),
+      this.strings.format(ERROR_CIRCULAR_DEPENDENCY),
       "error-import-circular",
       attributes,
       Optional.empty(),

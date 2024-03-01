@@ -83,6 +83,40 @@
     </xsd:choice>
   </xsd:group>
 
+  <xsd:complexType name="SizeAssertionType"
+                   abstract="true"/>
+
+  <xsd:element name="SizeAssertion">
+    <xsd:complexType>
+      <xsd:complexContent>
+        <xsd:extension base="m:SizeAssertionType">
+          <xsd:attribute name="Value"
+                         use="required"
+                         type="xsd:unsignedLong"/>
+        </xsd:extension>
+      </xsd:complexContent>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="SizeAssertionHex">
+    <xsd:complexType>
+      <xsd:complexContent>
+        <xsd:extension base="m:SizeAssertionType">
+          <xsd:attribute name="Value"
+                         use="required"
+                         type="m:HexNumberType"/>
+        </xsd:extension>
+      </xsd:complexContent>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:group name="SizeAssertionGroup">
+    <xsd:choice>
+      <xsd:element ref="m:SizeAssertion"/>
+      <xsd:element ref="m:SizeAssertionHex"/>
+    </xsd:choice>
+  </xsd:group>
+
   <xsd:element name="Documentation">
     <xsd:complexType>
       <xsd:simpleContent>
@@ -220,6 +254,12 @@
                           maxOccurs="1">
               <xsd:element ref="m:Documentation"/>
             </xsd:sequence>
+
+            <xsd:sequence minOccurs="0"
+                          maxOccurs="1">
+              <xsd:group ref="m:SizeAssertionGroup"/>
+            </xsd:sequence>
+
             <xsd:sequence minOccurs="0"
                           maxOccurs="unbounded">
               <xsd:choice>

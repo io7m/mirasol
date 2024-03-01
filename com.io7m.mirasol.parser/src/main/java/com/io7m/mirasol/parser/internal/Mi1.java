@@ -50,7 +50,7 @@ public final class Mi1
     return LexicalPosition.of(
       locator.getLineNumber(),
       locator.getColumnNumber(),
-      Optional.ofNullable(locator.getSystemId())
+      Optional.ofNullable(locator.getPublicId())
         .map(URI::create)
     );
   }

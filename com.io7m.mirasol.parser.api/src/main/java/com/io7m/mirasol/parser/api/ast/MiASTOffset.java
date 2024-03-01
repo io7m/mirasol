@@ -48,5 +48,6 @@ public record MiASTOffset(
   public MiASTOffset
   {
     Objects.requireNonNull(lexical, "lexical");
+    Objects.requireNonNull(value, "value");
   }
 }

@@ -29,6 +29,7 @@ import com.io7m.mirasol.parser.api.ast.MiASTImportDeclaration;
 import com.io7m.mirasol.parser.api.ast.MiASTMap;
 import com.io7m.mirasol.parser.api.ast.MiASTPackageElementType;
 import com.io7m.mirasol.parser.api.ast.MiASTScalarTypeDeclaration;
+import com.io7m.mirasol.parser.api.ast.MiASTSizeAssertion;
 import com.io7m.mirasol.parser.api.ast.MiASTStructure;
 import com.io7m.mirasol.parser.api.ast.MiASTTypeReference;
 import com.io7m.seltzer.api.SStructuredError;
@@ -48,6 +49,7 @@ import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CHECKER_FIELD_OVE
 import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CHECKER_SIZE_POSITIVE;
 import static com.io7m.mirasol.strings.MiStringConstants.FIELD_CONFLICTING;
 import static com.io7m.mirasol.strings.MiStringConstants.FIELD_CURRENT;
+import static com.io7m.mirasol.strings.MiStringConstants.PACKAGE;
 import static com.io7m.mirasol.strings.MiStringConstants.SIZE_BITS;
 import static com.io7m.mirasol.strings.MiStringConstants.SIZE_OCTETS_ACTUAL;
 import static com.io7m.mirasol.strings.MiStringConstants.SIZE_OCTETS_REQUIRED;
@@ -213,9 +215,30 @@ final class MiCheckerPassSizes
       }
     }
 
+    try {
+      this.validateStructureSizeAssertion(context, structure, sizeOctets);
+    } catch (final MiCheckerException e) {
+      tracker.addException(e);
+    }
+
     context.sizeSave(name, sizeOctets);
     tracker.throwIfNecessary();
     return sizeOctets;
+  }
+
+  private static void validateStructureSizeAssertion(
+    final MiCheckerContext context,
+    final MiASTStructure structure,
+    final BigInteger sizeOctets)
+    throws MiCheckerException
+  {
+    final var sizeAssertionOpt = structure.sizeAssertion();
+    if (sizeAssertionOpt.isPresent()) {
+      final var sizeAssertion = sizeAssertionOpt.get();
+      if (!Objects.equals(sizeAssertion.value(), sizeOctets)) {
+        throw errorSizeAssertionFailed(context, structure, sizeAssertion, sizeOctets);
+      }
+    }
   }
 
   private static void validateFieldOverlap(
@@ -372,6 +395,44 @@ final class MiCheckerPassSizes
     }
   }
 
+  private static MiCheckerException errorSizeAssertionFailed(
+    final MiCheckerContext context,
+    final MiASTStructure structure,
+    final MiASTSizeAssertion sizeAssertion,
+    final BigInteger sizeOctets)
+  {
+    final var attributes = new TreeMap<String, String>();
+    context.putLexicalPosition(attributes, sizeAssertion.lexical());
+
+    attributes.put(
+      context.format(PACKAGE),
+      context.source().name().toPackageName().toString()
+    );
+    attributes.put(
+      context.format(TYPE),
+      structure.name().value()
+    );
+    attributes.put(
+      context.format(SIZE_OCTETS_REQUIRED),
+      sizeAssertion.value().toString()
+    );
+    attributes.put(
+      context.format(SIZE_OCTETS_ACTUAL),
+      sizeOctets.toString()
+    );
+
+    return context.error(
+      new SStructuredError<>(
+        "error-size-assertion-failed",
+        context.format(ERROR_CHECKER_BIT_FIELD_SIZE_INSUFFICIENT),
+        attributes,
+        Optional.empty(),
+        Optional.empty()
+      )
+    );
+  }
+
+
   private static MiCheckerException errorBitFieldSizeInsufficient(
     final MiCheckerContext context,
     final MiASTStructure structure,
@@ -382,6 +443,10 @@ final class MiCheckerPassSizes
     final var attributes = new TreeMap<String, String>();
     context.putLexicalPosition(attributes, bitField.lexical());
 
+    attributes.put(
+      context.format(PACKAGE),
+      context.source().name().toPackageName().toString()
+    );
     attributes.put(
       context.format(TYPE),
       structure.name().value()
@@ -420,6 +485,10 @@ final class MiCheckerPassSizes
     context.putLexicalPosition(attributes, current.lexical());
 
     attributes.put(
+      context.format(PACKAGE),
+      context.source().name().toPackageName().toString()
+    );
+    attributes.put(
       context.format(TYPE),
       structure.name().value()
     );
@@ -452,6 +521,10 @@ final class MiCheckerPassSizes
     final var attributes = new TreeMap<String, String>();
     context.putLexicalPosition(attributes, current.lexical());
 
+    attributes.put(
+      context.format(PACKAGE),
+      context.source().name().toPackageName().toString()
+    );
     attributes.put(
       context.format(TYPE),
       structure.name().value()
@@ -511,6 +584,10 @@ final class MiCheckerPassSizes
     final var attributes = new TreeMap<String, String>();
     context.putLexicalPosition(attributes, scalar.lexical());
 
+    attributes.put(
+      context.format(PACKAGE),
+      context.source().name().toPackageName().toString()
+    );
     attributes.put(
       context.format(TYPE),
       scalar.name().value()

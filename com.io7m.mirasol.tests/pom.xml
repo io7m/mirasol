@@ -26,6 +26,11 @@
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>com.io7m.mirasol.cmdline</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>com.io7m.mirasol.core</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -57,6 +62,16 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>com.io7m.mirasol.strings</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>com.io7m.mirasol.extractor.api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>com.io7m.mirasol.extractor.cpp</artifactId>
       <version>${project.version}</version>
     </dependency>
 

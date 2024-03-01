@@ -76,7 +76,7 @@ public final class MiCompilerTest
     this.serializers =
       new MiSerializers();
     this.loaders =
-      new MiDirectoryLoaders(inDirectory);
+      new MiDirectoryLoaders(List.of(inDirectory));
     this.loader =
       this.loaders.create();
     this.compiler =
@@ -476,6 +476,46 @@ public final class MiCompilerTest
     final var errors = failed.errors();
     final var e0 = errors.get(0);
     assertEquals("error-field-overlap", e0.errorCode());
+  }
+
+  @Test
+  public void testSizeAssertionFailed0()
+    throws Exception
+  {
+    final var result =
+      this.compiler.compile(
+        URI.create("urn:stdin"),
+        resource("error-size-assertion-0.xml")
+      );
+
+    dumpResult(result);
+
+    final Failed<MiPackageType> failed =
+      (Failed<MiPackageType>) assertInstanceOf(Failed.class, result);
+
+    final var errors = failed.errors();
+    final var e0 = errors.get(0);
+    assertEquals("error-size-assertion-failed", e0.errorCode());
+  }
+
+  @Test
+  public void testSizeAssertionFailed1()
+    throws Exception
+  {
+    final var result =
+      this.compiler.compile(
+        URI.create("urn:stdin"),
+        resource("error-size-assertion-1.xml")
+      );
+
+    dumpResult(result);
+
+    final Failed<MiPackageType> failed =
+      (Failed<MiPackageType>) assertInstanceOf(Failed.class, result);
+
+    final var errors = failed.errors();
+    final var e0 = errors.get(0);
+    assertEquals("error-size-assertion-failed", e0.errorCode());
   }
 
   @Test

@@ -36,6 +36,7 @@ public sealed interface MiASTElementType
   MiASTPackageName,
   MiASTScalarTypeDeclaration,
   MiASTSimpleName,
+  MiASTSizeAssertion,
   MiASTTypeReference
 {
 

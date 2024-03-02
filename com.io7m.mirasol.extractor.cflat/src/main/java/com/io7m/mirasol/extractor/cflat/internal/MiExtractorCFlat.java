@@ -170,6 +170,7 @@ public final class MiExtractorCFlat
     writer.append('\n');
 
     writer.append("// Automatically generated. DO NOT EDIT.\n");
+    writer.append("// Extractor: com.io7m.mirasol.extractor.cflat\n");
     writer.append('\n');
 
     writer.append("#include <stdint.h>\n");

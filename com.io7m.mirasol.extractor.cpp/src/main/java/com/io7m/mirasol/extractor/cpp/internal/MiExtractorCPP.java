@@ -166,6 +166,7 @@ public final class MiExtractorCPP
     writer.append('\n');
 
     writer.append("// Automatically generated. DO NOT EDIT.\n");
+    writer.append("// Extractor: com.io7m.mirasol.extractor.cpp\n");
     writer.append('\n');
 
     writer.append("#include <stdint.h>\n");

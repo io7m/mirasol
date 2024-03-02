@@ -27,7 +27,9 @@ module com.io7m.mirasol.extractor.cpp
   requires com.io7m.mirasol.extractor.api;
   requires com.io7m.mirasol.strings;
 
+  requires com.io7m.abstand.core;
   requires com.io7m.jdeferthrow.core;
+  requires com.io7m.lanark.core;
 
   provides MiExtractorFactoryType
     with MiExtractorsCPP;

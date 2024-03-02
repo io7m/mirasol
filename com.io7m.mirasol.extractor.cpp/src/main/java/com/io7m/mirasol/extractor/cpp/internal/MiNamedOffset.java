@@ -15,7 +15,7 @@
  */
 
 
-package com.io7m.mirasol.extractor.cflat.internal;
+package com.io7m.mirasol.extractor.cpp.internal;
 
 import com.io7m.mirasol.core.MiSimpleName;
 
@@ -26,8 +26,7 @@ record MiNamedOffset(
   MiSimpleName name,
   BigInteger offset)
 {
-  MiNamedOffset
-  {
+  MiNamedOffset {
     Objects.requireNonNull(name, "name");
     Objects.requireNonNull(offset, "offset");
   }

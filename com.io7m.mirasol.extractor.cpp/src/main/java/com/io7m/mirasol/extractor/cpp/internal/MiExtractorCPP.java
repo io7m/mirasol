@@ -19,6 +19,7 @@ package com.io7m.mirasol.extractor.cpp.internal;
 
 import com.io7m.jdeferthrow.core.ExceptionTracker;
 import com.io7m.mirasol.core.MiBitFieldType;
+import com.io7m.mirasol.core.MiBitRangeType;
 import com.io7m.mirasol.core.MiFieldType;
 import com.io7m.mirasol.core.MiMapType;
 import com.io7m.mirasol.core.MiPackageName;
@@ -47,9 +48,12 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import static com.io7m.mirasol.core.MiScalarKindStandard.INTEGER_SIGNED;
 import static com.io7m.mirasol.core.MiScalarKindStandard.INTEGER_UNSIGNED;
+import static com.io7m.mirasol.strings.MiStringConstants.CPP_OFFSET_OF;
+import static com.io7m.mirasol.strings.MiStringConstants.CPP_SIZE_OF;
 import static com.io7m.mirasol.strings.MiStringConstants.ERROR_IO;
 import static com.io7m.mirasol.strings.MiStringConstants.ERROR_UNSUPPORTED_BIT_FIELD_TYPE;
 import static com.io7m.mirasol.strings.MiStringConstants.ERROR_UNSUPPORTED_SCALAR_TYPE;
@@ -73,6 +77,8 @@ public final class MiExtractorCPP
   private final MiExtractorConfiguration configuration;
   private final MiStrings strings;
   private BigInteger paddingIndex;
+  private BufferedWriter writer;
+  private MiPackageType packageNow;
 
   /**
    * An extractor for C/C++.
@@ -100,7 +106,8 @@ public final class MiExtractorCPP
 
     for (final var pack : this.configuration.packageList()) {
       try {
-        this.executePackage(pack);
+        this.packageNow = pack;
+        this.executePackage();
       } catch (final MiExtractorException e) {
         exceptionTracker.addException(e);
       }
@@ -109,24 +116,24 @@ public final class MiExtractorCPP
     exceptionTracker.throwIfNecessary();
   }
 
-  private void executePackage(
-    final MiPackageType pack)
+  private void executePackage()
     throws MiExtractorException
   {
     try {
       final var fileName =
-        fileNameOf(pack);
+        fileNameOf(this.packageNow);
       final var outputDirectory =
         this.configuration.outputDirectory();
       final var path =
         outputDirectory.resolve(fileName);
 
       Files.createDirectories(outputDirectory);
-      try (var writer = Files.newBufferedWriter(path, OPEN_OPTIONS)) {
-        this.executePackageFile(pack, writer);
+      this.writer = Files.newBufferedWriter(path, OPEN_OPTIONS);
+      try (var w = this.writer) {
+        this.writePackage();
       }
     } catch (final IOException e) {
-      throw this.errorIO(pack, e);
+      throw this.errorIO(this.packageNow, e);
     }
   }
 
@@ -150,84 +157,100 @@ public final class MiExtractorCPP
     );
   }
 
-  private void executePackageFile(
-    final MiPackageType pack,
-    final BufferedWriter writer)
+  private void writePackage()
     throws IOException, MiExtractorException
   {
-    final var guardName = guardNameOf(pack);
-    writer.append("#ifndef ");
-    writer.append(guardName);
-    writer.append('\n');
+    final var guardName = guardNameOf(this.packageNow);
+    this.writer.append("#ifndef ");
+    this.writer.append(guardName);
+    this.writer.append('\n');
 
-    writer.append("#define ");
-    writer.append(guardName);
-    writer.append('\n');
-    writer.append('\n');
+    this.writer.append("#define ");
+    this.writer.append(guardName);
+    this.writer.append('\n');
+    this.writer.append('\n');
 
-    writer.append("// Automatically generated. DO NOT EDIT.\n");
-    writer.append("// Extractor: com.io7m.mirasol.extractor.cpp\n");
-    writer.append('\n');
+    this.writer.append("// Automatically generated. DO NOT EDIT.\n");
+    this.writer.append("// Extractor: com.io7m.mirasol.extractor.cpp\n");
+    this.writer.append("// Package: ");
+    this.writer.append(this.packageNow.name().toString());
+    this.writer.append('\n');
+    this.writer.append('\n');
 
-    writer.append("#include <stdint.h>\n");
-    writer.append("#include <assert.h>\n");
-    writer.append('\n');
+    this.writer.append("#include <stdint.h>\n");
+    this.writer.append("#include <stddef.h>\n");
+    this.writer.append("#include <assert.h>\n");
+    this.writer.append('\n');
 
-    executePackageFileImports(pack, writer);
-    this.executePackageFileTypes(pack, writer);
-    executePackageFileMaps(pack, writer);
+    final var pathStart = this.startPath();
+    this.writePackageImports();
+    this.writePackageTypes(pathStart);
+    this.writePackageMaps(pathStart);
 
-    writer.append("#endif // ");
-    writer.append(guardName);
-    writer.append('\n');
+    this.writer.append("#endif // ");
+    this.writer.append(guardName);
+    this.writer.append('\n');
   }
 
-  private static void executePackageFileMaps(
-    final MiPackageType pack,
-    final BufferedWriter writer)
+  private MiNamedOffsetPath startPath()
+  {
+    return new MiNamedOffsetPath(
+      this.packageNow.name()
+        .value()
+        .segments()
+        .stream()
+        .map(x -> new MiNamedOffset(new MiSimpleName(x), BigInteger.ZERO))
+        .collect(Collectors.toList())
+    );
+  }
+
+  private void writePackageMaps(
+    final MiNamedOffsetPath path)
     throws IOException
   {
-    if (!pack.maps().isEmpty()) {
-      for (final var map : pack.maps()) {
-        executePackageFileMap(pack, writer, map);
+    if (!this.packageNow.maps().isEmpty()) {
+      for (final var map : this.packageNow.maps()) {
+        this.writeMap(
+          path.with(new MiNamedOffset(map.name(), map.offset())),
+          map
+        );
       }
-      writer.append('\n');
+      this.writer.append('\n');
     }
   }
 
-  private void executePackageFileTypes(
-    final MiPackageType pack,
-    final BufferedWriter writer)
+  private void writePackageTypes(
+    final MiNamedOffsetPath path)
     throws IOException, MiExtractorException
   {
-    final var typesOrdered = pack.typesTopological();
+    final var typesOrdered = this.packageNow.typesTopological();
     if (!typesOrdered.isEmpty()) {
       for (final var type : typesOrdered) {
-        this.executePackageFileType(pack, writer, type);
+        this.writeType(
+          path.with(new MiNamedOffset(type.name(), BigInteger.ZERO)),
+          type
+        );
       }
-      writer.append('\n');
+      this.writer.append('\n');
     }
   }
 
-  private static void executePackageFileImports(
-    final MiPackageType pack,
-    final BufferedWriter writer)
+  private void writePackageImports()
     throws IOException
   {
-    if (!pack.imports().isEmpty()) {
-      for (final var importE : pack.imports()) {
-        executePackageFileImport(writer, importE);
+    if (!this.packageNow.imports().isEmpty()) {
+      for (final var importE : this.packageNow.imports()) {
+        this.writeImport(importE);
       }
-      writer.append('\n');
+      this.writer.append('\n');
     }
   }
 
-  private static void executePackageFileImport(
-    final BufferedWriter writer,
+  private void writeImport(
     final MiPackageReference importE)
     throws IOException
   {
-    writer.append(
+    this.writer.append(
       "#include \"%s\"\n"
         .formatted(headerNameOf(importE.packageName()))
     );
@@ -243,137 +266,206 @@ public final class MiExtractorCPP
     return String.format("%s.h", packName);
   }
 
-  private void executePackageFileType(
-    final MiPackageType pack,
-    final BufferedWriter writer,
+  private void writeType(
+    final MiNamedOffsetPath path,
     final MiTypeType type)
     throws IOException, MiExtractorException
   {
     switch (type) {
-      case final MiScalarType sc -> {
-        this.executePackageFileTypeScalar(pack, writer, sc);
+      case final MiScalarType scalar -> {
+        this.writeScalar(path, scalar);
       }
       case final MiStructureType structure -> {
-        this.executePackageFileTypeStruct(pack, writer, structure);
+        this.writeStructure(path, structure);
       }
     }
   }
 
-  private void executePackageFileTypeStruct(
-    final MiPackageType pack,
-    final BufferedWriter writer,
+  private void writeStructure(
+    final MiNamedOffsetPath path,
     final MiStructureType structure)
     throws IOException, MiExtractorException
   {
-    final var typeName =
-      typeNameOf(pack, structure.name());
-
-    writer.append("typedef struct {\n");
+    final var typeName = path.toCName();
+    this.writer.append("typedef struct {\n");
 
     var offsetPrevious = BigInteger.ZERO;
 
     for (final var field : structure.fields()) {
-      this.executePackageFileTypeStructField(
-        pack,
+      this.writeStructureField(
+        path.with(new MiNamedOffset(field.name(), field.offset())),
         structure,
-        writer,
         field,
         offsetPrevious
       );
       offsetPrevious = field.offset().add(field.size().value());
     }
 
-    writer.append("} ");
-    writer.append(typeName);
-    writer.append(";\n");
-    writer.append("\n");
+    this.writer.append("} ");
+    this.writer.append(typeName);
+    this.writer.append(";\n");
+    this.writer.append("\n");
 
-    writer.append(
-      "static_assert(sizeof(%s) == %s);\n".formatted(
+    final var bitFieldCount =
+      structure.fields()
+        .stream()
+        .filter(p -> p instanceof MiBitFieldType)
+        .count();
+
+    if (bitFieldCount > 0L) {
+      this.writer.append("// Left shift and mask values for bit fields.\n");
+      for (final var field : structure.fields()) {
+        switch (field) {
+          case final MiBitFieldType bitField -> {
+            this.writeStructureBitFieldConstants(
+              path.with(new MiNamedOffset(field.name(), field.offset())),
+              bitField
+            );
+          }
+          case final MiTypedFieldType ignored -> {
+
+          }
+        }
+      }
+      this.writer.append("\n");
+    }
+
+    this.writer.append("// Size and offset assertions.\n");
+    this.writer.append(
+      "static_assert(sizeof(%s) == %s, %s);\n".formatted(
         typeName,
-        structure.size()
+        structure.size(),
+        '"' + this.strings.format(CPP_SIZE_OF, typeName, structure.size()) + '"'
       )
     );
-    writer.append("\n");
+
+    for (final var field : structure.fields()) {
+      final var name = field.name();
+      final var offset = field.offset();
+      this.writer.append(
+        "static_assert(offsetof(%s, %s) == %s, %s);\n".formatted(
+          typeName,
+          name,
+          offset,
+          '"' + this.strings.format(CPP_OFFSET_OF, name, typeName, offset) + '"'
+        )
+      );
+    }
+
+    this.writer.append("\n");
   }
 
-  private void executePackageFileTypeStructField(
-    final MiPackageType pack,
+  private void writeStructureBitFieldConstants(
+    final MiNamedOffsetPath path,
+    final MiBitFieldType bitField)
+    throws IOException
+  {
+    for (final var range : bitField.ranges()) {
+      this.writeStructureBitFieldConstantsRange(
+        path.with(new MiNamedOffset(range.name(), BigInteger.ZERO)),
+        range
+      );
+    }
+  }
+
+  private void writeStructureBitFieldConstantsRange(
+    final MiNamedOffsetPath path,
+    final MiBitRangeType range)
+    throws IOException
+  {
+    final var bitCount =
+      range.range()
+        .upper()
+        .subtract(range.range().lower())
+        .add(BigInteger.ONE);
+
+    final var mask =
+      BigInteger.valueOf(2L)
+        .pow(bitCount.intValueExact())
+        .subtract(BigInteger.ONE);
+
+    this.writer.append(
+      "#define %s %s\n".formatted(
+        path.toCName() + "__SHIFT",
+        range.range().lower()
+      )
+    );
+
+    this.writer.append(
+      "#define %s %s\n".formatted(
+        path.toCName() + "__MASK",
+        "0b" + mask.toString(2)
+      )
+    );
+  }
+
+  private void writeStructureField(
+    final MiNamedOffsetPath path,
     final MiStructureType structure,
-    final BufferedWriter writer,
     final MiFieldType field,
     final BigInteger offsetPrevious)
     throws IOException, MiExtractorException
   {
     if (!offsetPrevious.equals(field.offset())) {
-      this.insertPadding(writer, field.offset().subtract(offsetPrevious));
+      this.insertPadding(field.offset().subtract(offsetPrevious));
     }
 
     switch (field) {
       case final MiBitFieldType bitField -> {
-        this.executePackageFileTypeStructFieldBit(
-          pack,
-          structure,
-          writer,
-          bitField
-        );
+        this.writeStructureFieldBit(structure, bitField);
       }
       case final MiTypedFieldType typedField -> {
-        executePackageFileTypeStructFieldTyped(writer, typedField);
+        this.writeStructureFieldTyped(typedField);
       }
     }
   }
 
   private void insertPadding(
-    final BufferedWriter writer,
     final BigInteger count)
     throws IOException
   {
-    writer.append("  uint8_t padding");
-    writer.append(this.paddingIndex.toString());
-    writer.append("[");
-    writer.append(count.toString());
-    writer.append("];\n");
+    this.writer.append("  uint8_t padding");
+    this.writer.append(this.paddingIndex.toString());
+    this.writer.append("[");
+    this.writer.append(count.toString());
+    this.writer.append("];\n");
     this.paddingIndex = this.paddingIndex.add(BigInteger.ONE);
   }
 
-  private static void executePackageFileTypeStructFieldTyped(
-    final BufferedWriter writer,
+  private void writeStructureFieldTyped(
     final MiTypedFieldType typedField)
     throws IOException
   {
-    writer.append("  ");
-    writer.append(typeNameOf(typedField.type()));
-    writer.append(" ");
-    writer.append(typedField.name().value());
-    writer.append(";\n");
+    this.writer.append("  ");
+    this.writer.append(typeNameOf(typedField.type()));
+    this.writer.append(" ");
+    this.writer.append(typedField.name().value());
+    this.writer.append(";\n");
   }
 
-  private void executePackageFileTypeStructFieldBit(
-    final MiPackageType pack,
+  private void writeStructureFieldBit(
     final MiStructureType structure,
-    final BufferedWriter writer,
     final MiBitFieldType bitField)
     throws IOException, MiExtractorException
   {
-    writer.append("  ");
+    this.writer.append("  ");
 
     final var size = bitField.size();
     if (Objects.equals(size, MiSizeOctets.of(1L))) {
-      writer.append("uint8_t");
+      this.writer.append("uint8_t");
     } else if (Objects.equals(size, MiSizeOctets.of(2L))) {
-      writer.append("uint16_t");
+      this.writer.append("uint16_t");
     } else if (Objects.equals(size, MiSizeOctets.of(4L))) {
-      writer.append("uint32_t");
+      this.writer.append("uint32_t");
     } else if (Objects.equals(size, MiSizeOctets.of(8L))) {
-      writer.append("uint64_t");
+      this.writer.append("uint64_t");
     } else {
-      throw this.errorUnsupportedBitFieldType(pack, structure, bitField);
+      throw this.errorUnsupportedBitFieldType(structure, bitField);
     }
 
-    writer.append(" ");
-    writer.append(bitField.name().value());
-    writer.append(";\n");
+    this.writer.append(" ");
+    this.writer.append(bitField.name().value());
+    this.writer.append(";\n");
   }
 
   private static String typeNameOf(
@@ -387,87 +479,61 @@ public final class MiExtractorCPP
     return String.format("%s_%s", packName, type.type().name());
   }
 
-  private static String typeNameOf(
-    final MiPackageType pack,
-    final MiSimpleName name)
-  {
-    final var packName =
-      pack.name()
-        .toString()
-        .replace('.', '_');
-
-    return String.format("%s_%s", packName, name);
-  }
-
-  private static String mapNameOf(
-    final MiPackageType pack,
-    final MiSimpleName name)
-  {
-    final var packName =
-      pack.name()
-        .toString()
-        .replace('.', '_');
-
-    return String.format("%s_%s", packName, name);
-  }
-
-  private void executePackageFileTypeScalar(
-    final MiPackageType pack,
-    final BufferedWriter writer,
+  private void writeScalar(
+    final MiNamedOffsetPath path,
     final MiScalarType scalar)
     throws IOException, MiExtractorException
   {
-    writer.append("typedef ");
+    this.writer.append("typedef ");
 
     final var size = scalar.size();
     switch (scalar.kind()) {
       case INTEGER_SIGNED -> {
         if (Objects.equals(size, MiSizeOctets.of(1L))) {
-          writer.append("int8_t");
+          this.writer.append("int8_t");
         } else if (Objects.equals(size, MiSizeOctets.of(2L))) {
-          writer.append("int16_t");
+          this.writer.append("int16_t");
         } else if (Objects.equals(size, MiSizeOctets.of(4L))) {
-          writer.append("int32_t");
+          this.writer.append("int32_t");
         } else if (Objects.equals(size, MiSizeOctets.of(8L))) {
-          writer.append("int64_t");
+          this.writer.append("int64_t");
         } else {
-          throw this.errorUnsupportedScalarType(pack, scalar);
+          throw this.errorUnsupportedScalarType(scalar);
         }
       }
       case INTEGER_UNSIGNED -> {
         if (Objects.equals(size, MiSizeOctets.of(1L))) {
-          writer.append("uint8_t");
+          this.writer.append("uint8_t");
         } else if (Objects.equals(size, MiSizeOctets.of(2L))) {
-          writer.append("uint16_t");
+          this.writer.append("uint16_t");
         } else if (Objects.equals(size, MiSizeOctets.of(4L))) {
-          writer.append("uint32_t");
+          this.writer.append("uint32_t");
         } else if (Objects.equals(size, MiSizeOctets.of(8L))) {
-          writer.append("uint64_t");
+          this.writer.append("uint64_t");
         } else {
-          throw this.errorUnsupportedScalarType(pack, scalar);
+          throw this.errorUnsupportedScalarType(scalar);
         }
       }
       default -> {
-        throw this.errorUnsupportedScalarType(pack, scalar);
+        throw this.errorUnsupportedScalarType(scalar);
       }
     }
 
-    writer.append(" ");
-    writer.append(typeNameOf(pack, scalar.name()));
-    writer.append(";\n");
+    this.writer.append(" ");
+    this.writer.append(path.toCName());
+    this.writer.append(";\n");
   }
 
-  private static void executePackageFileMap(
-    final MiPackageType pack,
-    final BufferedWriter writer,
+  private void writeMap(
+    final MiNamedOffsetPath path,
     final MiMapType map)
     throws IOException
   {
-    writer.append(
+    this.writer.append(
       String.format(
         "%s * const %s = (%s * const) %s;\n",
         typeNameOf(map.type()),
-        mapNameOf(pack, map.name()),
+        path.toCName(),
         typeNameOf(map.type()),
         map.offset()
       )
@@ -494,14 +560,13 @@ public final class MiExtractorCPP
   }
 
   private MiExtractorException errorUnsupportedScalarType(
-    final MiPackageType pack,
     final MiScalarType scalar)
   {
     final var attributes = new TreeMap<String, String>();
 
     attributes.put(
       this.strings.format(PACKAGE),
-      pack.name().toString()
+      this.packageNow.name().toString()
     );
     attributes.put(
       this.strings.format(TYPE),
@@ -518,7 +583,6 @@ public final class MiExtractorCPP
   }
 
   private MiExtractorException errorUnsupportedBitFieldType(
-    final MiPackageType pack,
     final MiStructureType structure,
     final MiBitFieldType bitField)
   {
@@ -526,7 +590,7 @@ public final class MiExtractorCPP
 
     attributes.put(
       this.strings.format(PACKAGE),
-      pack.name().toString()
+      this.packageNow.name().toString()
     );
     attributes.put(
       this.strings.format(TYPE),

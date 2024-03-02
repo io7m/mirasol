@@ -36,6 +36,14 @@
     </dependency>
 
     <dependency>
+      <groupId>com.io7m.abstand</groupId>
+      <artifactId>com.io7m.abstand.core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.io7m.lanark</groupId>
+      <artifactId>com.io7m.lanark.core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.io7m.jdeferthrow</groupId>
       <artifactId>com.io7m.jdeferthrow.core</artifactId>
     </dependency>

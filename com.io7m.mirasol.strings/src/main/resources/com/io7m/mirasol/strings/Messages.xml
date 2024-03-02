@@ -21,6 +21,9 @@
   <entry key="error_io">I/O error.</entry>
   <entry key="error_no_such_package">No such package.</entry>
 
+  <entry key="cpp_size_of">Size of structure {0} is {1}</entry>
+  <entry key="cpp_offset_of">Offset of field {0} in type {1} is {2}</entry>
+
   <entry key="bit_field">Bit Field</entry>
   <entry key="bit_field_conflicting">Bit Field (Conflicting)</entry>
   <entry key="bit_field_current">Bit Field (Current)</entry>

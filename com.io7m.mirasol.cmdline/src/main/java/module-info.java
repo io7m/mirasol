@@ -29,9 +29,10 @@ open module com.io7m.mirasol.cmdline
   requires com.io7m.mirasol.strings;
   requires com.io7m.mirasol.compiler.api;
 
+  requires com.io7m.anethum.api;
   requires com.io7m.jade.api;
   requires com.io7m.jade.vanilla;
-  requires com.io7m.anethum.api;
+  requires com.io7m.jdeferthrow.core;
   requires com.io7m.quarrel.core;
   requires com.io7m.quarrel.ext.logback;
 

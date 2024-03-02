@@ -3,6 +3,9 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 
 <properties>
+  <entry key="error_unsupported_bit_field_type">Unsupported bit field kind or size.</entry>
+  <entry key="error_unsupported_scalar_type">Unsupported scalar kind or size.</entry>
+
   <entry key="error_checker_bit_field_overlap">The range of this bit field overlaps at least one other bit field.</entry>
   <entry key="error_checker_bit_field_size_insufficient">The specified size of the bit field is insufficient to hold the specified bit ranges.</entry>
   <entry key="error_checker_field_overlap">The range of this field overlaps at least one other field.</entry>

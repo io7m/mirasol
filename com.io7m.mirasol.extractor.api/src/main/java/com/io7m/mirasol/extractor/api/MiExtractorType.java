@@ -17,8 +17,6 @@
 
 package com.io7m.mirasol.extractor.api;
 
-import java.io.IOException;
-
 /**
  * A language extractor.
  */
@@ -28,9 +26,9 @@ public interface MiExtractorType
   /**
    * Execute the extractor, producing output files.
    *
-   * @throws IOException On I/O errors
+   * @throws MiExtractorException On errors
    */
 
   void execute()
-    throws IOException;
+    throws MiExtractorException;
 }

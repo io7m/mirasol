@@ -21,6 +21,7 @@ import com.io7m.abstand.core.IntervalTree;
 import com.io7m.abstand.core.IntervalTreeDebuggableType;
 import com.io7m.abstand.core.IntervalType;
 import com.io7m.jdeferthrow.core.ExceptionTracker;
+import com.io7m.mirasol.core.MiSizeOctets;
 import com.io7m.mirasol.parser.api.ast.MiASTBitField;
 import com.io7m.mirasol.parser.api.ast.MiASTBitRange;
 import com.io7m.mirasol.parser.api.ast.MiASTField;
@@ -85,14 +86,14 @@ final class MiCheckerPassSizes
     tracker.throwIfNecessary();
   }
 
-  private BigInteger sizeOfElement(
+  private MiSizeOctets sizeOfElement(
     final MiCheckerContext context,
     final MiASTPackageElementType element)
     throws MiCheckerException
   {
     return switch (element) {
       case final MiASTImportDeclaration ignored -> {
-        yield BigInteger.ZERO;
+        yield new MiSizeOctets(BigInteger.ZERO);
       }
 
       case final MiASTMap map -> {
@@ -109,7 +110,7 @@ final class MiCheckerPassSizes
     };
   }
 
-  private BigInteger sizeMap(
+  private MiSizeOctets sizeMap(
     final MiCheckerContext context,
     final MiASTMap map)
     throws MiCheckerException
@@ -125,7 +126,7 @@ final class MiCheckerPassSizes
     return sizeOctets;
   }
 
-  private BigInteger sizeOf(
+  private MiSizeOctets sizeOf(
     final MiCheckerContext context,
     final MiASTTypeReference typeRef)
     throws MiCheckerException
@@ -144,7 +145,7 @@ final class MiCheckerPassSizes
     return type.type().size();
   }
 
-  private BigInteger sizeOfStructure(
+  private MiSizeOctets sizeOfStructure(
     final MiCheckerContext context,
     final MiASTStructure structure)
     throws MiCheckerException
@@ -187,7 +188,7 @@ final class MiCheckerPassSizes
             tracker.addException(e);
           }
 
-          sizeOctets = sizeOctets.max(fieldOffset.add(fieldSize));
+          sizeOctets = sizeOctets.max(fieldOffset.add(fieldSize.value()));
         }
 
         case final MiASTField plainField -> {
@@ -210,7 +211,7 @@ final class MiCheckerPassSizes
             tracker.addException(e);
           }
 
-          sizeOctets = sizeOctets.max(fieldOffset.add(fieldSize));
+          sizeOctets = sizeOctets.max(fieldOffset.add(fieldSize.value()));
         }
       }
     }
@@ -221,9 +222,11 @@ final class MiCheckerPassSizes
       tracker.addException(e);
     }
 
-    context.sizeSave(name, sizeOctets);
+
+    final var rSize = new MiSizeOctets(sizeOctets);
+    context.sizeSave(name, rSize);
     tracker.throwIfNecessary();
-    return sizeOctets;
+    return rSize;
   }
 
   private static void validateStructureSizeAssertion(
@@ -246,13 +249,13 @@ final class MiCheckerPassSizes
     final MiASTStructure structure,
     final MiASTFieldType bitField,
     final BigInteger fieldOffset,
-    final BigInteger fieldSize,
+    final MiSizeOctets fieldSize,
     final HashMap<IntervalB, MiASTFieldType> intervalsByField,
     final IntervalTreeDebuggableType<BigInteger> intervals)
     throws MiCheckerException
   {
     final var fieldInterval =
-      new IntervalB(fieldOffset, fieldOffset.add(subtractOne(fieldSize)));
+      new IntervalB(fieldOffset, fieldOffset.add(subtractOne(fieldSize.value())));
 
     final var conflicting = intervalsByField.get(fieldInterval);
     if (conflicting != null) {
@@ -376,11 +379,11 @@ final class MiCheckerPassSizes
       final var octets = q[0];
       final var remainder = q[1];
 
-      final BigInteger octetsRequired;
+      final MiSizeOctets octetsRequired;
       if (remainder.compareTo(BigInteger.ZERO) > 0) {
-        octetsRequired = octets.add(BigInteger.ONE);
+        octetsRequired = new MiSizeOctets(octets.add(BigInteger.ONE));
       } else {
-        octetsRequired = octets;
+        octetsRequired = new MiSizeOctets(octets);
       }
 
       if (octetsRequired.compareTo(bitField.sizeOctets()) > 0) {
@@ -437,8 +440,8 @@ final class MiCheckerPassSizes
     final MiCheckerContext context,
     final MiASTStructure structure,
     final MiASTBitField bitField,
-    final BigInteger required,
-    final BigInteger provided)
+    final MiSizeOctets required,
+    final MiSizeOctets provided)
   {
     final var attributes = new TreeMap<String, String>();
     context.putLexicalPosition(attributes, bitField.lexical());
@@ -549,7 +552,7 @@ final class MiCheckerPassSizes
     );
   }
 
-  private static BigInteger sizeOfScalar(
+  private static MiSizeOctets sizeOfScalar(
     final MiCheckerContext context,
     final MiASTScalarTypeDeclaration scalar)
     throws MiCheckerException
@@ -561,20 +564,21 @@ final class MiCheckerPassSizes
     }
 
     final var sizeBits = scalar.size();
-    if (sizeBits.compareTo(BigInteger.ZERO) <= 0) {
+    if (sizeBits.value().compareTo(BigInteger.ZERO) <= 0) {
       throw errorSizeMustBePositive(context, scalar);
     }
 
     final var sizeOctetsR =
-      sizeBits.divideAndRemainder(BigInteger.valueOf(8L));
+      sizeBits.value().divideAndRemainder(BigInteger.valueOf(8L));
 
     var sizeOctets = sizeOctetsR[0];
     if (sizeOctetsR[1].compareTo(BigInteger.ZERO) > 0) {
       sizeOctets = sizeOctets.add(BigInteger.ONE);
     }
 
-    context.sizeSave(name, sizeOctets);
-    return sizeOctets;
+    final var rSize = new MiSizeOctets(sizeOctets);
+    context.sizeSave(name, rSize);
+    return rSize;
   }
 
   private static MiCheckerException errorSizeMustBePositive(

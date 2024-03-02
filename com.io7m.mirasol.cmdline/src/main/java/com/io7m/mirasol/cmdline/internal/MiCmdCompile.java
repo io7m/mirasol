@@ -19,8 +19,6 @@ package com.io7m.mirasol.cmdline.internal;
 
 import com.io7m.mirasol.compiler.MiCompilers;
 import com.io7m.mirasol.compiler.MiDirectoryLoaders;
-import com.io7m.mirasol.compiler.api.MiCompilerResultType;
-import com.io7m.mirasol.core.MiPackageType;
 import com.io7m.quarrel.core.QCommandContextType;
 import com.io7m.quarrel.core.QCommandMetadata;
 import com.io7m.quarrel.core.QCommandStatus;
@@ -29,11 +27,11 @@ import com.io7m.quarrel.core.QParameterNamed0N;
 import com.io7m.quarrel.core.QParameterNamedType;
 import com.io7m.quarrel.core.QStringType.QConstant;
 import com.io7m.quarrel.ext.logback.QLogback;
-import com.io7m.seltzer.api.SStructuredErrorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,6 +87,7 @@ public final class MiCmdCompile implements QCommandType
   @Override
   public QCommandStatus onExecute(
     final QCommandContextType context)
+    throws IOException
   {
     QLogback.configure(context);
 
@@ -101,84 +100,24 @@ public final class MiCmdCompile implements QCommandType
       MiDirectories.create();
     final var packageDirectoriesAll =
       new ArrayList<>(packageDirectories);
-    packageDirectoriesAll.addFirst(directories.dataDirectory());
+    final var systemPackageDirectory =
+      directories.dataDirectory().resolve("packages");
+
+    Files.createDirectories(systemPackageDirectory);
+    packageDirectoriesAll.addFirst(systemPackageDirectory);
 
     final var loader =
-      new MiDirectoryLoaders(packageDirectories)
+      new MiDirectoryLoaders(packageDirectoriesAll)
         .create();
 
-    final var compilers =
-      new MiCompilers();
-    final var compiler =
-      compilers.create(loader);
-
-    var failedFlag = false;
-    for (final var file : files) {
-      try {
-        final MiCompilerResultType<MiPackageType> result =
-          compiler.compileFile(file);
-
-        switch (result) {
-          case final MiCompilerResultType.Succeeded<MiPackageType> ignored -> {
-            // OK
-          }
-          case final MiCompilerResultType.Failed<MiPackageType> failed -> {
-            failedFlag = true;
-            for (final var error : failed.errors()) {
-              logError(LOG, error);
-            }
-          }
-        }
-      } catch (final IOException e) {
-        LOG.error("I/O error: {}: ", file, e);
-        failedFlag = true;
-      }
-    }
-
-    return failedFlag ? QCommandStatus.FAILURE : QCommandStatus.SUCCESS;
-  }
-
-  private static void logError(
-    final Logger logger,
-    final SStructuredErrorType<String> error)
-  {
-    var maxKeyLength = 0;
-    for (final var entry : error.attributes().entrySet()) {
-      maxKeyLength = Math.max(maxKeyLength, entry.getKey().length());
-    }
-
-    final var builder = new StringBuilder(256);
-    builder.append(error.errorCode());
-    builder.append(": ");
-    builder.append(error.message());
-    builder.append(System.lineSeparator());
-
-    for (final var entry : error.attributes().entrySet()) {
-      final var key = entry.getKey();
-      final var pad = maxKeyLength - key.length();
-      builder.append("  ");
-      builder.append(key);
-      builder.append(" ".repeat(pad));
-      builder.append(" : ");
-      builder.append(entry.getValue());
-      builder.append(System.lineSeparator());
-    }
-
-    final var actionOpt = error.remediatingAction();
-    if (actionOpt.isPresent()) {
-      final var action = actionOpt.get();
-      builder.append(System.lineSeparator());
-      builder.append("Action: ");
-      builder.append(action);
-      builder.append(System.lineSeparator());
-    }
-
-    logger.error("{}", builder);
-
-    if (error.exception().isPresent()) {
-      logger.error("", error.exception().get());
+    try {
+      MiCompilation.doCompile(LOG, new MiCompilers(), loader, files);
+      return QCommandStatus.SUCCESS;
+    } catch (final MiCompilation.MiCompilationFailed e) {
+      return QCommandStatus.FAILURE;
     }
   }
+
 
   @Override
   public QCommandMetadata metadata()

@@ -26,6 +26,7 @@
     <module>com.io7m.mirasol.compiler</module>
     <module>com.io7m.mirasol.core</module>
     <module>com.io7m.mirasol.extractor.api</module>
+    <module>com.io7m.mirasol.extractor.cflat</module>
     <module>com.io7m.mirasol.extractor.cpp</module>
     <module>com.io7m.mirasol.loader.api</module>
     <module>com.io7m.mirasol.parser.api</module>
@@ -117,6 +118,11 @@
         <groupId>com.io7m.abstand</groupId>
         <artifactId>com.io7m.abstand.core</artifactId>
         <version>1.0.0-beta0001</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.junreachable</groupId>
+        <artifactId>com.io7m.junreachable.core</artifactId>
+        <version>4.0.0</version>
       </dependency>
 
       <!-- CLI -->

@@ -17,8 +17,6 @@
 
 package com.io7m.mirasol.core;
 
-import java.math.BigInteger;
-
 /**
  * A type declaration.
  */
@@ -37,5 +35,5 @@ public sealed interface MiTypeType
    * @return The size of the type in octets
    */
 
-  BigInteger size();
+  MiSizeOctets size();
 }

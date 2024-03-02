@@ -172,4 +172,113 @@ public final class MiCommandLineTest
     main.run();
     assertEquals(0, main.exitCode());
   }
+
+  @TestFactory
+  public Stream<DynamicTest> testGenerateFailures()
+  {
+    return Stream.of(
+      "error-bit-range-overlap-0.xml",
+      "error-bit-range-overlap-1.xml",
+      "error-bit-range-size-insufficient-0.xml",
+      "error-bit-range-size-insufficient-1.xml",
+      "error-circA.xml",
+      "error-circB.xml",
+      "error-empty.xml",
+      "error-field-overlap-0.xml",
+      "error-field-overlap-1.xml",
+      "error-field-overlap-2.xml",
+      "error-field-overlap-3.xml",
+      "error-size-assertion-0.xml",
+      "error-size-assertion-1.xml",
+      "error-sizes-0.xml",
+      "error-type-circ0.xml",
+      "error-type-circ1.xml",
+      "error-type-ref-map-0.xml"
+    ).flatMap(file -> {
+      return Stream.of(
+          "com.io7m.mirasol.extractor.cpp",
+          "com.io7m.mirasol.extractor.cflat")
+        .map(extractor -> {
+          return DynamicTest.dynamicTest(
+            "testGenerateFailure_%s_%s".formatted(extractor, file),
+            () -> {
+              this.generateFail(extractor, file);
+            });
+        });
+    });
+  }
+
+  @TestFactory
+  public Stream<DynamicTest> testGenerateSuccess()
+  {
+    return Stream.of(
+      "attiny212.xml"
+    ).flatMap(file -> {
+      return Stream.of(
+        "com.io7m.mirasol.extractor.cpp",
+        "com.io7m.mirasol.extractor.cflat")
+        .map(extractor -> {
+          return DynamicTest.dynamicTest(
+            "testGenerateSuccess_%s_%s".formatted(extractor, file),
+            () -> {
+              this.generateSuccess(extractor, file);
+            });
+        });
+    });
+  }
+
+  private void generateFail(
+    final String extractor,
+    final String file)
+    throws IOException
+  {
+    final var path = this.directory.resolve("file.xml");
+    Files.deleteIfExists(path);
+
+    try (var stream = resource(file)) {
+      Files.copy(stream, path);
+    }
+
+    final var main = new MiMain(new String[]{
+      "generate",
+      "--extractor",
+      extractor,
+      "--file", path.toString(),
+      "--package-directory",
+      this.directory.toString(),
+      "--output-directory",
+      this.directory.resolve("output").toString(),
+    });
+    main.run();
+    assertEquals(1, main.exitCode());
+  }
+
+  private void generateSuccess(
+    final String extractor,
+    final String file)
+    throws IOException
+  {
+    final var path = this.directory.resolve("file.xml");
+    Files.deleteIfExists(path);
+
+    try (var stream = resource(file)) {
+      Files.copy(stream, path);
+    }
+
+    final var output = this.directory.resolve("output");
+    Files.createDirectories(output);
+
+    final var main = new MiMain(new String[]{
+      "generate",
+      "--file", path.toString(),
+      "--extractor",
+      extractor,
+      "--package-directory",
+      this.directory.toString(),
+      "--output-directory",
+      output.toString(),
+    });
+    main.run();
+    assertEquals(0, main.exitCode());
+  }
 }

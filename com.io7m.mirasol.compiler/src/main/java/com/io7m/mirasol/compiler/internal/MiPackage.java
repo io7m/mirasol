@@ -17,23 +17,31 @@
 
 package com.io7m.mirasol.compiler.internal;
 
+import com.io7m.mirasol.core.MiBitFieldType;
 import com.io7m.mirasol.core.MiMapType;
 import com.io7m.mirasol.core.MiPackageElementType;
 import com.io7m.mirasol.core.MiPackageName;
 import com.io7m.mirasol.core.MiPackageReference;
 import com.io7m.mirasol.core.MiPackageType;
+import com.io7m.mirasol.core.MiScalarType;
 import com.io7m.mirasol.core.MiSimpleName;
+import com.io7m.mirasol.core.MiStructureType;
 import com.io7m.mirasol.core.MiTypeReference;
 import com.io7m.mirasol.core.MiTypeType;
+import com.io7m.mirasol.core.MiTypedFieldType;
+import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -54,7 +62,7 @@ final class MiPackage implements MiPackageType
     this.name = Objects.requireNonNull(inName, "name");
     this.types = new HashMap<>();
     this.maps = new HashMap<>();
-    this.imports = new ArrayList<MiPackageReference>();
+    this.imports = new ArrayList<>();
     this.documentation = "";
   }
 
@@ -103,7 +111,89 @@ final class MiPackage implements MiPackageType
   {
     Objects.requireNonNull(simpleName, "simpleName");
     return Optional.ofNullable((MiPackageElementType) this.types.get(simpleName))
-      .or(() -> Optional.ofNullable((MiPackageElementType) this.maps.get(simpleName)));
+      .or(() -> Optional.ofNullable((MiPackageElementType) this.maps.get(
+        simpleName)));
+  }
+
+  @Override
+  public Collection<MiMapType> maps()
+  {
+    return this.maps.values()
+      .stream()
+      .sorted(Comparator.comparing(MiMapType::name))
+      .collect(Collectors.toList());
+  }
+
+  @Override
+  public Collection<MiTypeType> types()
+  {
+    return this.types.values()
+      .stream()
+      .sorted(Comparator.comparing(MiTypeType::name))
+      .collect(Collectors.toList());
+  }
+
+  private record TypeDependency(
+    MiTypeType source,
+    MiTypeType target)
+  {
+    TypeDependency
+    {
+      Objects.requireNonNull(source, "source");
+      Objects.requireNonNull(target, "target");
+    }
+  }
+
+  @Override
+  public Collection<MiTypeType> typesTopological()
+  {
+    final var graph =
+      new DirectedAcyclicGraph<MiTypeType, TypeDependency>(
+        TypeDependency.class);
+
+    for (final var type : this.types.values()) {
+      graph.addVertex(type);
+    }
+
+    for (final var type : this.types.values()) {
+      switch (type) {
+        case final MiScalarType scalar -> {
+
+        }
+        case final MiStructureType struct -> {
+          for (final var field : struct.fields()) {
+            switch (field) {
+              case final MiBitFieldType bitField -> {
+
+              }
+              case final MiTypedFieldType typedField -> {
+                final var typeRef = typedField.type();
+                if (Objects.equals(typeRef.packageName(), this.name)) {
+                  graph.addEdge(
+                    type,
+                    typeRef.type(),
+                    new TypeDependency(type, typeRef.type())
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    final var iterator =
+      new TopologicalOrderIterator<>(graph);
+
+    final var output =
+      new ArrayList<MiTypeType>();
+
+    while (iterator.hasNext()) {
+      output.add(iterator.next());
+    }
+
+    Collections.reverse(output);
+    return List.copyOf(output);
   }
 
   @Override
@@ -225,5 +315,34 @@ final class MiPackage implements MiPackageType
   {
     this.documentation =
       Objects.requireNonNull(value, "value");
+  }
+
+  @Override
+  public boolean equals(final Object other)
+  {
+    if (this == other) {
+      return true;
+    }
+    if (other == null || !this.getClass().equals(other.getClass())) {
+      return false;
+    }
+    final MiPackage that = (MiPackage) other;
+    return Objects.equals(this.name, that.name)
+           && Objects.equals(this.types, that.types)
+           && Objects.equals(this.maps, that.maps)
+           && Objects.equals(this.imports, that.imports)
+           && Objects.equals(this.documentation, that.documentation);
+  }
+
+  @Override
+  public int hashCode()
+  {
+    return Objects.hash(
+      this.name,
+      this.types,
+      this.maps,
+      this.imports,
+      this.documentation
+    );
   }
 }

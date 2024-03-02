@@ -18,6 +18,7 @@
 package com.io7m.mirasol.compiler.internal;
 
 import com.io7m.mirasol.core.MiSimpleName;
+import com.io7m.mirasol.core.MiSizeOctets;
 import com.io7m.mirasol.core.MiTypeReference;
 import com.io7m.mirasol.core.MiTypedFieldType;
 
@@ -38,7 +39,7 @@ record MiTypedField(
   }
 
   @Override
-  public BigInteger size()
+  public MiSizeOctets size()
   {
     return this.type.type().size();
   }

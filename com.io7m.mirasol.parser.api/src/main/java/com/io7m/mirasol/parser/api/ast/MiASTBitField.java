@@ -18,8 +18,8 @@
 package com.io7m.mirasol.parser.api.ast;
 
 import com.io7m.jlexing.core.LexicalPosition;
+import com.io7m.mirasol.core.MiSizeOctets;
 
-import java.math.BigInteger;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
@@ -41,7 +41,7 @@ public record MiASTBitField(
   MiASTSimpleName name,
   MiASTOffset offset,
   List<MiASTBitRange> ranges,
-  BigInteger sizeOctets)
+  MiSizeOctets sizeOctets)
   implements MiASTDocumentedType, MiASTFieldType
 {
   /**

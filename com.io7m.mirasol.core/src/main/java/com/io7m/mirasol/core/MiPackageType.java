@@ -57,4 +57,22 @@ public interface MiPackageType
 
   Optional<MiPackageElementType> object(
     MiSimpleName name);
+
+  /**
+   * @return The maps in alphabetical order
+   */
+
+  Collection<MiMapType> maps();
+
+  /**
+   * @return The types in alphabetical order
+   */
+
+  Collection<MiTypeType> types();
+
+  /**
+   * @return The types in topological order
+   */
+
+  Collection<MiTypeType> typesTopological();
 }

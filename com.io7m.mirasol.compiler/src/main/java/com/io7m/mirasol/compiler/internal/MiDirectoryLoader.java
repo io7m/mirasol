@@ -31,11 +31,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CIRCULAR_DEPENDENCY;
 import static com.io7m.mirasol.strings.MiStringConstants.ERROR_CIRCULAR_PATH;
@@ -144,6 +147,15 @@ public final class MiDirectoryLoader implements MiLoaderType
     } finally {
       this.packageStack.removeLast();
     }
+  }
+
+  @Override
+  public Collection<MiPackageType> loadedPackages()
+  {
+    return this.packageCache.values()
+      .stream()
+      .sorted(Comparator.comparing(MiPackageType::name))
+      .collect(Collectors.toList());
   }
 
   private MiException errorNoSuchPackage(

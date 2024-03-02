@@ -18,6 +18,7 @@ package com.io7m.mirasol.cmdline;
 
 import com.io7m.mirasol.cmdline.internal.MiCmdCompile;
 import com.io7m.mirasol.cmdline.internal.MiCmdExtractors;
+import com.io7m.mirasol.cmdline.internal.MiCmdGenerate;
 import com.io7m.quarrel.core.QApplication;
 import com.io7m.quarrel.core.QApplicationMetadata;
 import com.io7m.quarrel.core.QApplicationType;
@@ -67,6 +68,7 @@ public final class MiMain implements Runnable
     final var builder = QApplication.builder(metadata);
     builder.addCommand(new MiCmdExtractors());
     builder.addCommand(new MiCmdCompile());
+    builder.addCommand(new MiCmdGenerate());
 
     this.application = builder.build();
     this.exitCode = 0;

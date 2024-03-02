@@ -22,6 +22,7 @@ import com.io7m.mirasol.core.MiFieldType;
 import com.io7m.mirasol.core.MiMapType;
 import com.io7m.mirasol.core.MiPackageElementType;
 import com.io7m.mirasol.core.MiPackageName;
+import com.io7m.mirasol.core.MiScalarKinds;
 import com.io7m.mirasol.core.MiScalarType;
 import com.io7m.mirasol.core.MiStructureType;
 import com.io7m.mirasol.core.MiTypeReference;
@@ -252,8 +253,9 @@ final class MiCheckerPassBuild
     final var scalarType =
       new MiScalar(
         name,
-        scalar.kind().toSimpleName(),
-        context.sizeOf(name).orElseThrow()
+        MiScalarKinds.of(scalar.kind().value()),
+        context.sizeOf(name).orElseThrow(),
+        scalar.size()
       );
 
     context.buildSave(scalarType);

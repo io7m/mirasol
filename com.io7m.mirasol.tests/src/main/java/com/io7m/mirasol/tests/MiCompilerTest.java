@@ -17,6 +17,7 @@
 
 package com.io7m.mirasol.tests;
 
+import com.io7m.anethum.api.SerializationException;
 import com.io7m.mirasol.compiler.MiCompilers;
 import com.io7m.mirasol.compiler.MiDirectoryLoaders;
 import com.io7m.mirasol.compiler.MiStandardPackages;
@@ -211,7 +212,7 @@ public final class MiCompilerTest
     assertTrue(pack.object(new MiSimpleName("GPIO")).isPresent());
     assertTrue(pack.object(new MiSimpleName("PINCTRL")).isPresent());
     assertTrue(pack.object(new MiSimpleName("FUSE")).isPresent());
-    assertTrue(pack.object(new MiSimpleName("ATTiny212Map")).isPresent());
+    assertTrue(pack.object(new MiSimpleName("Map")).isPresent());
 
     assertEquals("com.microchip.attiny212", pack.name().toString());
 
@@ -222,7 +223,7 @@ public final class MiCompilerTest
       "PINCTRL",
       "PORT",
       "VREF",
-      "ATTiny212Map"
+      "Map"
     );
 
     assertEquals(
@@ -255,11 +256,22 @@ public final class MiCompilerTest
       pack.clear();
     });
 
-    this.serializers.serialize(
-      URI.create("urn:out"),
-      System.out,
+    this.roundTrip(
       pack
     );
+  }
+
+  private void roundTrip(
+    final MiPackageType pack)
+    throws SerializationException, IOException
+  {
+    final var path = this.directory.resolve("serialized.mpx");
+    Files.deleteIfExists(path);
+    this.serializers.serializeFile(path, pack);
+
+    final var result =
+      (Succeeded<MiPackageType>) this.compiler.compileFile(path);
+    assertEquals(pack, result.result());
   }
 
   @Test
@@ -313,7 +325,7 @@ public final class MiCompilerTest
       final var expectedSize = (i / 8) + extra;
       assertEquals(
         expectedSize,
-        type.type().size().intValueExact()
+        type.type().size().value().intValueExact()
       );
     }
   }

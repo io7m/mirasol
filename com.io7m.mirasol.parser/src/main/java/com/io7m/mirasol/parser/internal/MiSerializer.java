@@ -26,6 +26,7 @@ import com.io7m.mirasol.core.MiPackageElementType;
 import com.io7m.mirasol.core.MiPackageReference;
 import com.io7m.mirasol.core.MiPackageType;
 import com.io7m.mirasol.core.MiScalarType;
+import com.io7m.mirasol.core.MiSizeOctets;
 import com.io7m.mirasol.core.MiStructureType;
 import com.io7m.mirasol.core.MiTypeReference;
 import com.io7m.mirasol.core.MiTypedFieldType;
@@ -191,10 +192,21 @@ public final class MiSerializer
     this.output.writeStartElement("Structure");
     this.output.writeAttribute("Name", structure.name().value());
 
+    this.serializePackageElementSizeAssertion(structure.size());
+
     for (final var field : structure.fields()) {
       this.serializePackageElementStructureField(pack, field);
     }
 
+    this.output.writeEndElement();
+  }
+
+  private void serializePackageElementSizeAssertion(
+    final MiSizeOctets size)
+    throws XMLStreamException
+  {
+    this.output.writeStartElement("SizeAssertion");
+    this.output.writeAttribute("Value", size.value().toString());
     this.output.writeEndElement();
   }
 
@@ -234,7 +246,7 @@ public final class MiSerializer
 
     if (!Objects.equals(type.packageName(), pack.name())) {
       this.output.writeAttribute(
-        "Package",
+        "Prefix",
         pack.imports()
           .stream()
           .filter(i -> Objects.equals(i.packageName(), type.packageName()))
@@ -271,6 +283,8 @@ public final class MiSerializer
   {
     this.output.writeStartElement("BitField");
     this.output.writeAttribute("Name", bitField.name().value());
+    this.output.writeAttribute("SizeOctets", bitField.size().value().toString());
+
     this.serializeOffset(bitField.offset());
 
     for (final var bitRange : bitField.ranges()) {
@@ -300,7 +314,7 @@ public final class MiSerializer
   {
     this.output.writeStartElement("ScalarType");
     this.output.writeAttribute("Name", scalar.name().value());
-    this.output.writeAttribute("Kind", scalar.kind().value());
+    this.output.writeAttribute("Kind", scalar.kind().show());
     this.output.writeAttribute("SizeInBits", scalar.size().toString());
     this.output.writeEndElement();
   }

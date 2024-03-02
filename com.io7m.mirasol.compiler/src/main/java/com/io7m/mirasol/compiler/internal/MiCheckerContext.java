@@ -26,6 +26,7 @@ import com.io7m.mirasol.core.MiPackageReference;
 import com.io7m.mirasol.core.MiPackageType;
 import com.io7m.mirasol.core.MiScalarType;
 import com.io7m.mirasol.core.MiSimpleName;
+import com.io7m.mirasol.core.MiSizeOctets;
 import com.io7m.mirasol.core.MiStructureType;
 import com.io7m.mirasol.loader.api.MiLoaderType;
 import com.io7m.mirasol.parser.api.ast.MiASTImportDeclaration;
@@ -42,7 +43,6 @@ import com.io7m.seltzer.api.SStructuredErrorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,7 +69,7 @@ final class MiCheckerContext
   private final MiLoaderType loader;
   private final HashMap<MiSimpleName, MiPackageType> importedPackages;
   private final HashMap<MiSimpleName, MiASTPackageElementType> elementsByName;
-  private final HashMap<MiSimpleName, BigInteger> sizesInOctets;
+  private final HashMap<MiSimpleName, MiSizeOctets> sizesInOctets;
   private final HashMap<MiSimpleName, MiPackageElementType> buildElements;
 
   /**
@@ -242,7 +242,7 @@ final class MiCheckerContext
         this.importedPackages.entrySet()
           .stream()
           .sorted(Map.Entry.comparingByKey())
-        .toList();
+          .toList();
 
       for (final var entry : entries) {
         output.addImport(new MiPackageReference(
@@ -269,7 +269,7 @@ final class MiCheckerContext
     return output;
   }
 
-  public Optional<BigInteger> sizeOf(
+  public Optional<MiSizeOctets> sizeOf(
     final MiSimpleName name)
   {
     return Optional.ofNullable(this.sizesInOctets.get(name));
@@ -277,7 +277,7 @@ final class MiCheckerContext
 
   public void sizeSave(
     final MiSimpleName name,
-    final BigInteger sizeOctets)
+    final MiSizeOctets sizeOctets)
   {
     LOG.trace("Size {} -> {}", name, sizeOctets);
     this.sizesInOctets.put(name, sizeOctets);

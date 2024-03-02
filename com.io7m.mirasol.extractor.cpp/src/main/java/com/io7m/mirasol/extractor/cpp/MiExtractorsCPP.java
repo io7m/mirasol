@@ -53,7 +53,7 @@ public final class MiExtractorsCPP
   @Override
   public String language()
   {
-    return "ISO C99";
+    return "ISO C11";
   }
 
   @Override

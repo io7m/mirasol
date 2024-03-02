@@ -326,7 +326,7 @@
     </Field>
   </Structure>
 
-  <Map Name="ATTiny212Map">
+  <Map Name="Map">
     <Offset Value="0"/>
     <Type Name="ATTiny212"/>
   </Map>

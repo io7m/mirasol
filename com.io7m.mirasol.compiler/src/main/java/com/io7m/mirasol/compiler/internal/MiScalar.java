@@ -17,16 +17,19 @@
 
 package com.io7m.mirasol.compiler.internal;
 
+import com.io7m.mirasol.core.MiScalarKindType;
 import com.io7m.mirasol.core.MiScalarType;
 import com.io7m.mirasol.core.MiSimpleName;
+import com.io7m.mirasol.core.MiSizeBits;
+import com.io7m.mirasol.core.MiSizeOctets;
 
-import java.math.BigInteger;
 import java.util.Objects;
 
 record MiScalar(
   MiSimpleName name,
-  MiSimpleName kind,
-  BigInteger size)
+  MiScalarKindType kind,
+  MiSizeOctets size,
+  MiSizeBits sizeBits)
   implements MiScalarType
 {
   MiScalar
@@ -34,5 +37,6 @@ record MiScalar(
     Objects.requireNonNull(name, "name");
     Objects.requireNonNull(kind, "kind");
     Objects.requireNonNull(size, "size");
+    Objects.requireNonNull(sizeBits, "sizeBits");
   }
 }

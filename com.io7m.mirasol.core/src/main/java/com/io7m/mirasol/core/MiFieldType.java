@@ -44,7 +44,7 @@ public sealed interface MiFieldType
    * @return The field size
    */
 
-  BigInteger size();
+  MiSizeOctets size();
 
   /**
    * @return The inclusive octet range covered by this field
@@ -54,7 +54,7 @@ public sealed interface MiFieldType
   {
     return new IntervalB(
       this.offset(),
-      this.offset().add(this.size().subtract(BigInteger.ONE))
+      this.offset().add(this.size().value().subtract(BigInteger.ONE))
     );
   }
 }

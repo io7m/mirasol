@@ -21,6 +21,7 @@
 module com.io7m.mirasol.extractor.api
 {
   requires com.io7m.mirasol.core;
+  requires com.io7m.seltzer.api;
 
   exports com.io7m.mirasol.extractor.api;
 }

@@ -19,15 +19,15 @@ package com.io7m.mirasol.compiler.internal;
 
 import com.io7m.mirasol.core.MiFieldType;
 import com.io7m.mirasol.core.MiSimpleName;
+import com.io7m.mirasol.core.MiSizeOctets;
 import com.io7m.mirasol.core.MiStructureType;
 
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
 record MiStructure(
   MiSimpleName name,
-  BigInteger size,
+  MiSizeOctets size,
   List<MiFieldType> fields)
   implements MiStructureType
 {

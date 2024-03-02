@@ -29,7 +29,7 @@ import java.util.Optional;
  * The exception raised by the package.
  */
 
-public final class MiException
+public class MiException
   extends Exception
   implements SStructuredErrorExceptionType<String>
 {
@@ -42,7 +42,7 @@ public final class MiException
    * @return The extra errors associated with this exception
    */
 
-  public List<SStructuredErrorType<String>> extras()
+  public final List<SStructuredErrorType<String>> extras()
   {
     return this.extras;
   }
@@ -111,25 +111,25 @@ public final class MiException
   }
 
   @Override
-  public String errorCode()
+  public final String errorCode()
   {
     return this.errorCode;
   }
 
   @Override
-  public Map<String, String> attributes()
+  public final Map<String, String> attributes()
   {
     return this.attributes;
   }
 
   @Override
-  public Optional<String> remediatingAction()
+  public final Optional<String> remediatingAction()
   {
     return this.remediatingAction;
   }
 
   @Override
-  public Optional<Throwable> exception()
+  public final Optional<Throwable> exception()
   {
     return Optional.of(this);
   }

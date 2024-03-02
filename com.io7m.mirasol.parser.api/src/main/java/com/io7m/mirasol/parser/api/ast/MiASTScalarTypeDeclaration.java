@@ -18,8 +18,8 @@
 package com.io7m.mirasol.parser.api.ast;
 
 import com.io7m.jlexing.core.LexicalPosition;
+import com.io7m.mirasol.core.MiSizeBits;
 
-import java.math.BigInteger;
 import java.net.URI;
 import java.util.Objects;
 
@@ -38,7 +38,7 @@ public record MiASTScalarTypeDeclaration(
   MiASTDocumentation documentation,
   MiASTSimpleName name,
   MiASTSimpleName kind,
-  BigInteger size)
+  MiSizeBits size)
   implements MiASTDocumentedType, MiASTPackageElementType, MiASTElementType,
   MiASTTypeElementType
 {

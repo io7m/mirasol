@@ -22,6 +22,7 @@ import com.io7m.blackthorne.core.BTElementHandlerType;
 import com.io7m.blackthorne.core.BTElementParsingContextType;
 import com.io7m.blackthorne.core.BTQualifiedName;
 import com.io7m.jlexing.core.LexicalPosition;
+import com.io7m.mirasol.core.MiSizeBits;
 import com.io7m.mirasol.parser.api.ast.MiASTDocumentation;
 import com.io7m.mirasol.parser.api.ast.MiASTScalarTypeDeclaration;
 import com.io7m.mirasol.parser.api.ast.MiASTSimpleName;
@@ -45,7 +46,7 @@ public final class Mi1PScalarType
   private LexicalPosition<URI> lexical;
   private MiASTSimpleName name;
   private MiASTSimpleName kind;
-  private BigInteger size;
+  private MiSizeBits size;
 
   /**
    * Element handler.
@@ -102,7 +103,7 @@ public final class Mi1PScalarType
     this.kind =
       new MiASTSimpleName(this.lexical, attributes.getValue("Kind"));
     this.size =
-      new BigInteger(attributes.getValue("SizeInBits"));
+      new MiSizeBits(new BigInteger(attributes.getValue("SizeInBits")));
   }
 
   @Override

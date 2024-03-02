@@ -20,6 +20,7 @@ package com.io7m.mirasol.compiler.internal;
 import com.io7m.mirasol.core.MiBitFieldType;
 import com.io7m.mirasol.core.MiBitRangeType;
 import com.io7m.mirasol.core.MiSimpleName;
+import com.io7m.mirasol.core.MiSizeOctets;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -28,7 +29,7 @@ import java.util.Objects;
 record MiBitField(
   MiSimpleName name,
   BigInteger offset,
-  BigInteger size,
+  MiSizeOctets size,
   List<MiBitRangeType> ranges)
   implements MiBitFieldType
 {

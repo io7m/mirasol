@@ -19,6 +19,7 @@ package com.io7m.mirasol.compiler.internal;
 
 import com.io7m.mirasol.core.MiMapType;
 import com.io7m.mirasol.core.MiSimpleName;
+import com.io7m.mirasol.core.MiSizeOctets;
 import com.io7m.mirasol.core.MiTypeReference;
 
 import java.math.BigInteger;
@@ -28,7 +29,7 @@ record MiMap(
   MiSimpleName name,
   MiTypeReference type,
   BigInteger offset,
-  BigInteger size)
+  MiSizeOctets size)
   implements MiMapType
 {
   MiMap

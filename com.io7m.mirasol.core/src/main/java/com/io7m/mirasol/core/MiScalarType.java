@@ -28,5 +28,11 @@ public non-sealed interface MiScalarType
    * @return The base scalar kind
    */
 
-  MiSimpleName kind();
+  MiScalarKindType kind();
+
+  /**
+   * @return The declared size in bits
+   */
+
+  MiSizeBits sizeBits();
 }

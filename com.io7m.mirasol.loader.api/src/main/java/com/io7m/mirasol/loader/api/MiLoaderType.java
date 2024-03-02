@@ -20,6 +20,8 @@ import com.io7m.mirasol.core.MiException;
 import com.io7m.mirasol.core.MiPackageName;
 import com.io7m.mirasol.core.MiPackageType;
 
+import java.util.Collection;
+
 /**
  * The type of package loaders.
  */
@@ -39,4 +41,10 @@ public interface MiLoaderType
   MiPackageType openPackage(
     MiPackageName name)
     throws MiException;
+
+  /**
+   * @return The set of packages that have been loaded
+   */
+
+  Collection<MiPackageType> loadedPackages();
 }

@@ -22,6 +22,7 @@ import com.io7m.blackthorne.core.BTElementHandlerType;
 import com.io7m.blackthorne.core.BTElementParsingContextType;
 import com.io7m.blackthorne.core.BTQualifiedName;
 import com.io7m.jlexing.core.LexicalPosition;
+import com.io7m.mirasol.core.MiSizeOctets;
 import com.io7m.mirasol.parser.api.ast.MiASTBitField;
 import com.io7m.mirasol.parser.api.ast.MiASTBitRange;
 import com.io7m.mirasol.parser.api.ast.MiASTDocumentation;
@@ -47,7 +48,7 @@ public final class Mi1PBitField
   private final ArrayList<MiASTBitRange> ranges;
   private MiASTDocumentation documentation;
   private LexicalPosition<URI> lexical;
-  private BigInteger size;
+  private MiSizeOctets size;
   private MiASTSimpleName name;
   private MiASTOffset offset;
 
@@ -122,7 +123,7 @@ public final class Mi1PBitField
     this.lexical =
       position(context.documentLocator());
     this.size =
-      new BigInteger(attributes.getValue("SizeOctets"));
+      new MiSizeOctets(new BigInteger(attributes.getValue("SizeOctets")));
     this.name =
       new MiASTSimpleName(this.lexical, attributes.getValue("Name"));
   }

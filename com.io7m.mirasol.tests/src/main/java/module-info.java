@@ -27,6 +27,7 @@ open module com.io7m.mirasol.tests
   requires com.io7m.mirasol.compiler;
   requires com.io7m.mirasol.core;
   requires com.io7m.mirasol.extractor.api;
+  requires com.io7m.mirasol.extractor.cflat;
   requires com.io7m.mirasol.extractor.cpp;
   requires com.io7m.mirasol.loader.api;
   requires com.io7m.mirasol.parser.api;

@@ -28,6 +28,7 @@
     <module>com.io7m.mirasol.extractor.api</module>
     <module>com.io7m.mirasol.extractor.cflat</module>
     <module>com.io7m.mirasol.extractor.cpp</module>
+    <module>com.io7m.mirasol.extractor.pascal</module>
     <module>com.io7m.mirasol.loader.api</module>
     <module>com.io7m.mirasol.parser.api</module>
     <module>com.io7m.mirasol.parser</module>

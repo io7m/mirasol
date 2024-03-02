@@ -79,6 +79,11 @@
       <artifactId>com.io7m.mirasol.extractor.cflat</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>com.io7m.mirasol.extractor.pascal</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.io7m.anethum</groupId>

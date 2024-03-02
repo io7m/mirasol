@@ -15,38 +15,24 @@
  */
 
 import com.io7m.mirasol.extractor.api.MiExtractorFactoryType;
+import com.io7m.mirasol.extractor.pascal.MiExtractorsPascal;
 
 /**
- * Machine-readable memory map documentation (Test suite)
+ * Machine-readable memory map documentation (Extractor Pascal)
  */
 
-open module com.io7m.mirasol.tests
+module com.io7m.mirasol.extractor.pascal
 {
-  requires com.io7m.mirasol.cmdline;
-  requires com.io7m.mirasol.compiler.api;
-  requires com.io7m.mirasol.compiler;
   requires com.io7m.mirasol.core;
   requires com.io7m.mirasol.extractor.api;
-  requires com.io7m.mirasol.extractor.cflat;
-  requires com.io7m.mirasol.extractor.cpp;
-  requires com.io7m.mirasol.extractor.pascal;
-  requires com.io7m.mirasol.loader.api;
-  requires com.io7m.mirasol.parser.api;
-  requires com.io7m.mirasol.parser;
-  requires com.io7m.mirasol.schema;
   requires com.io7m.mirasol.strings;
 
-  requires com.io7m.quarrel.core;
-  requires com.io7m.anethum.api;
-  requires com.io7m.jxe.core;
-  requires org.slf4j;
+  requires com.io7m.abstand.core;
+  requires com.io7m.jdeferthrow.core;
+  requires com.io7m.lanark.core;
 
-  requires transitive org.junit.jupiter.api;
-  requires transitive org.junit.jupiter.engine;
-  requires transitive org.junit.platform.commons;
-  requires transitive org.junit.platform.engine;
+  provides MiExtractorFactoryType
+    with MiExtractorsPascal;
 
-  uses MiExtractorFactoryType;
-
-  exports com.io7m.mirasol.tests;
+  exports com.io7m.mirasol.extractor.pascal;
 }

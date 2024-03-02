@@ -197,7 +197,8 @@ public final class MiCommandLineTest
     ).flatMap(file -> {
       return Stream.of(
           "com.io7m.mirasol.extractor.cpp",
-          "com.io7m.mirasol.extractor.cflat")
+          "com.io7m.mirasol.extractor.cflat",
+          "com.io7m.mirasol.extractor.pascal")
         .map(extractor -> {
           return DynamicTest.dynamicTest(
             "testGenerateFailure_%s_%s".formatted(extractor, file),
@@ -216,7 +217,8 @@ public final class MiCommandLineTest
     ).flatMap(file -> {
       return Stream.of(
         "com.io7m.mirasol.extractor.cpp",
-        "com.io7m.mirasol.extractor.cflat")
+        "com.io7m.mirasol.extractor.cflat",
+        "com.io7m.mirasol.extractor.pascal")
         .map(extractor -> {
           return DynamicTest.dynamicTest(
             "testGenerateSuccess_%s_%s".formatted(extractor, file),

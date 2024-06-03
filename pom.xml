@@ -118,7 +118,7 @@
       <dependency>
         <groupId>com.io7m.abstand</groupId>
         <artifactId>com.io7m.abstand.core</artifactId>
-        <version>1.0.0-beta0002</version>
+        <version>1.1.0</version>
       </dependency>
       <dependency>
         <groupId>com.io7m.junreachable</groupId>
